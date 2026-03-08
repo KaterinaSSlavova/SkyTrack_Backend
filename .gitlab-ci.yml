@@ -6,12 +6,12 @@ stages:
 build:
   stage: build
   script:
-    - cmd /c gradlew.bat assemble --no-daemon
+    - ./gradlew assemble --no-daemon
 
 test:
   stage: test
   script:
-    - cmd /c gradlew.bat test --no-daemon
+    - ./gradlew test assemble --no-daemon
 
 sonarqube-check:
   stage: sonarqube-check
