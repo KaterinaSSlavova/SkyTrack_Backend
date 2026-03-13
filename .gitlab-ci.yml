@@ -3,17 +3,26 @@ stages:
 - test
 - sonarqube-check
 
-build:
+backend_build:
   stage: build
   script:
+    - cd backend
     - ./gradlew assemble --no-daemon
 
-test:
+backend_test:
   stage: test
   script:
+    - cd backend
     - ./gradlew test assemble --no-daemon
 
-sonarqube-check:
+backend_sonarqube-check:
   stage: sonarqube-check
   script:
-    - echo "Setting up CI"
+    - cd backend
+    - echo "<3"
+
+frontend_build:
+  stage: build
+  script:
+    - cd frontend
+    - npm run build
