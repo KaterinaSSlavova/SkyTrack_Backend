@@ -7,12 +7,14 @@ backend_build:
   stage: build
   script:
     - cd backend
+    - chmod +x gradlew
     - ./gradlew assemble --no-daemon
 
 backend_test:
   stage: test
   script:
     - cd backend
+    - chmod +x gradlew
     - ./gradlew test assemble --no-daemon
 
 backend_sonarqube-check:
