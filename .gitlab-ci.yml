@@ -21,7 +21,7 @@ backend_sonarqube-check:
   stage: sonarqube-check
   script:
     - cd backend
-    - echo "<3"
+    - echo "..."
 
 frontend_build:
   stage: build
