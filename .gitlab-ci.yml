@@ -3,29 +3,17 @@ stages:
 - test
 - sonarqube-check
 
-backend_build:
+build:
   stage: build
   script:
-    - cd backend
-    - chmod +x gradlew
     - ./gradlew assemble --no-daemon
 
-backend_test:
+test:
   stage: test
   script:
-    - cd backend
-    - chmod +x gradlew
     - ./gradlew test assemble --no-daemon
 
-backend_sonarqube-check:
+sonarqube-check:
   stage: sonarqube-check
   script:
-    - cd backend
-    - echo "..."
-
-frontend_build:
-  stage: build
-  script:
-    - cd frontend
-    - npm ci
-    - npm run build
+    - echo "be"
