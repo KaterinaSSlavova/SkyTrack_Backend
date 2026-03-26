@@ -10,3 +10,7 @@ spring:
 
   flyway:
     enabled: true
+
+sentry:
+  dsn: https://3c587baa3f7b670fa78794a0d924b298@o4511095744954368.ingest.de.sentry.io/4511095771824208
+  traces-sample-rate: 1.0

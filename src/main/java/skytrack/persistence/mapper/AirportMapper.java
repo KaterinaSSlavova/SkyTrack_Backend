@@ -22,7 +22,8 @@ public class AirportMapper {
                 airport.getName(),
                 airport.getCity(),
                 airport.getCountry(),
-                airport.getTimezone()
+                airport.getTimezone(),
+                null
         );
     }
 }

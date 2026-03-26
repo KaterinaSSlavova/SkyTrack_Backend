@@ -19,6 +19,7 @@ public class AirportRepositoryImpl implements AirportRepository {
     @Override
     public Airport saveAirport(Airport airport) {
         AirportEntity entity = AirportMapper.toEntity(airport);
+        entity.setIsArchived(false);
         AirportEntity savedEntity = jpaAirportRepository.save(entity);
         return AirportMapper.toDomain(savedEntity);
     }
@@ -31,18 +32,22 @@ public class AirportRepositoryImpl implements AirportRepository {
 
     @Override
     public Optional<Airport> getAirportById(Long airportId) {
-        return jpaAirportRepository.findById(airportId)
+        return jpaAirportRepository.findByIdAndIsArchivedFalse(airportId)
                 .map(AirportMapper::toDomain);
     }
 
     @Override
     public void deleteAirport(Long airportId) {
-        jpaAirportRepository.deleteById(airportId);
+        AirportEntity entity = jpaAirportRepository.findByIdAndIsArchivedFalse(airportId)
+                .orElseThrow(() -> new IllegalStateException("Airport must exist before deleting it!"));
+        entity.setIsArchived(true);
+        jpaAirportRepository.save(entity);
     }
 
     @Override
     public List<Airport> getAllAirports() {
-        return jpaAirportRepository.findAll().stream().map(AirportMapper::toDomain).toList();
+        return jpaAirportRepository
+                .findByIsArchivedFalse().stream().map(AirportMapper::toDomain).toList();
     }
 
     @Override

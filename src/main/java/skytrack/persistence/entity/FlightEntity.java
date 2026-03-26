@@ -47,4 +47,7 @@ public class FlightEntity {
 
     @Column(name ="created_at")
     private Instant createdAt;
+
+    @Column(name="is_archived")
+    private Boolean isArchived;
 }

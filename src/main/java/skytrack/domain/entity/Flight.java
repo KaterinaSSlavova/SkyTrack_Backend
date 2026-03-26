@@ -78,10 +78,14 @@ public class Flight {
     }
 
     private void validatePrice(BigDecimal price){
-        throw new InvalidFlightException(InvalidFlightException.INVALID_PRICE);
+        if(price == null || price.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new InvalidFlightException(InvalidFlightException.INVALID_PRICE);
+        }
     }
 
     private void validateStatus(FlightStatus status) {
-        throw new InvalidFlightException(InvalidFlightException.STATUS_NULL);
+        if(status == null || status.getName()==null || status.getName().isBlank()){
+            throw new InvalidFlightException(InvalidFlightException.STATUS_NULL);
+        }
     }
 }

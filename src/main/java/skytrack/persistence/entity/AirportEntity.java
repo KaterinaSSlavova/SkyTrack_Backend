@@ -25,4 +25,7 @@ public class AirportEntity {
     private String city;
     private String country;
     private String timezone;
+
+    @Column(name="is_archived")
+    private Boolean isArchived;
 }
