@@ -27,3 +27,4 @@ sonarqube-check:
   allow_failure: true
   only:
     - main
+    - dev
