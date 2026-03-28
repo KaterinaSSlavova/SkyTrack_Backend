@@ -23,7 +23,7 @@ sonarqube-check:
     paths:
       - .sonar/cache
   script:
-    - ./gradlew build sonar --no-daemon -Dsonar.qualitygate.wait=true
+    - ./gradlew test jacocoTestReport sonar --no-daemon -Dsonar.qualitygate.wait=true
   allow_failure: true
   only:
     - main
