@@ -33,7 +33,6 @@ public class FlightMapper {
                flight.getCapacity(),
                flight.getPrice(),
                FlightStatusMapper.toEntity(flight.getStatus()),
-               null,
                null
        );
    }

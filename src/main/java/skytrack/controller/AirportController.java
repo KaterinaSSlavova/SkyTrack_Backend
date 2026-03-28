@@ -19,7 +19,7 @@ public class AirportController {
     private final GetAirportUseCase getAirportUseCase;
     private final CreateAirportUseCase createAirportUseCase;
     private final UpdateAirportUseCase updateAirportUseCase;
-    private final DeleteAirportUseCase deleteAirportUseCase;
+    private final ArchiveAirportUseCase archiveAirportUseCase;
 
     @GetMapping
     public ResponseEntity<GetAllAirports> getAllAirports() {
@@ -47,9 +47,9 @@ public class AirportController {
         return ResponseEntity.noContent().build();
     }
 
-    @DeleteMapping("{id}")
+    @PatchMapping("{id}")
     public ResponseEntity<Void> deleteAirport(@PathVariable("id")final Long id) {
-        deleteAirportUseCase.deleteAirport(id);
+        archiveAirportUseCase.archiveAirport(id);
         return ResponseEntity.noContent().build();
     }
 }

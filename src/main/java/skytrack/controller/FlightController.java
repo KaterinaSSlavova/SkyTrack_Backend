@@ -19,7 +19,7 @@ public class FlightController {
     private final GetFlightUseCase getFlightUseCase;
     private final GetAllFlightsUseCase getAllFlightsUseCase;
     private final UpdateFlightUseCase updateFlightUseCase;
-    private final DeleteFlightUseCase deleteFlightUseCase;
+    private final CancelFlightUseCase cancelFlightUseCase;
 
     @GetMapping
     public ResponseEntity<GetAllFlightsResponse> getAllFlights(){
@@ -44,9 +44,9 @@ public class FlightController {
         return ResponseEntity.noContent().build();
     }
 
-    @DeleteMapping("{id}")
-    public ResponseEntity<Void> deleteFlight(@PathVariable("id")final Long id){
-        deleteFlightUseCase.deleteFlight(id);
+    @PatchMapping("{id}/cancel")
+    public ResponseEntity<Void> cancelFlight(@PathVariable("id") final Long id){
+        cancelFlightUseCase.cancelFlight(id);
         return ResponseEntity.noContent().build();
     }
 }

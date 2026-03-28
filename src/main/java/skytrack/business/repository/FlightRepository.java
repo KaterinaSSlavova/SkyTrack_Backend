@@ -9,7 +9,6 @@ public interface FlightRepository {
     Flight saveFlight(Flight flight);
     void updateFlight(Flight flight);
     Optional<Flight> findFlightById(Long flightId);
-    void deleteFlight(Long flightId);
     List<Flight> getAllFlights();
     boolean existsById(Long flightId);
 }

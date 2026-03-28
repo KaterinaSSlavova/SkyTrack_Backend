@@ -2,6 +2,7 @@ package skytrack.business.impl.airport;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import skytrack.business.exception.AirportNullException;
 import skytrack.business.mapper.AirportMapper;
 import skytrack.business.repository.AirportRepository;
 import skytrack.business.useCase.airport.CreateAirportUseCase;
@@ -16,6 +17,9 @@ public class CreateAirportUseCaseImpl implements CreateAirportUseCase {
 
     @Override
     public AirportResponse createAirport(CreateAirportRequest request) {
+        if(request == null){
+            throw new AirportNullException();
+        }
         Airport airport = AirportMapper.toDomain(request);
         return AirportMapper.toResponse(airportRepository.saveAirport(airport));
     }

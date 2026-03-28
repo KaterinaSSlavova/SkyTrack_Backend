@@ -2,6 +2,7 @@ package skytrack.domain.entity;
 
 import lombok.Builder;
 import lombok.Getter;
+import lombok.Setter;
 import skytrack.domain.exception.InvalidFlightException;
 
 import java.math.BigDecimal;
@@ -19,6 +20,7 @@ public class Flight {
     private String terminal;
     private Integer capacity;
     private BigDecimal price;
+    @Setter
     private FlightStatus status;
 
     public Flight(Long id, String flightNumber, Airport departureAirport,

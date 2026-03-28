@@ -20,10 +20,9 @@ public class FlightRepositoryImpl implements FlightRepository {
     @Override
     public Flight saveFlight(Flight flight) {
         FlightEntity entity = FlightMapper.toEntity(flight);
-        if(entity.getCreatedAt() == null){
+        if(entity.getCreatedAt() == null) {
             entity.setCreatedAt(Instant.now());
         }
-        entity.setIsArchived(false);
         FlightEntity savedEntity = jpaFlightRepository.save(entity);
         return FlightMapper.toDomain(savedEntity);
     }
@@ -35,27 +34,18 @@ public class FlightRepositoryImpl implements FlightRepository {
 
         FlightEntity updatedEntity = FlightMapper.toEntity(flight);
         updatedEntity.setCreatedAt(oldEntity.getCreatedAt());
-        updatedEntity.setIsArchived(oldEntity.getIsArchived());
         jpaFlightRepository.save(updatedEntity);
     }
 
     @Override
     public Optional<Flight> findFlightById(Long flightId) {
-       return jpaFlightRepository.findByIdAndIsArchivedFalse(flightId)
+       return jpaFlightRepository.findById(flightId)
                .map(FlightMapper::toDomain);
     }
 
     @Override
-    public void deleteFlight(Long flightId) {
-        FlightEntity entity = jpaFlightRepository.findByIdAndIsArchivedFalse(flightId)
-                .orElseThrow(() -> new IllegalStateException("Flight must exist before deleting!"));
-        entity.setIsArchived(true);
-        jpaFlightRepository.save(entity);
-    }
-
-    @Override
     public List<Flight> getAllFlights() {
-        return jpaFlightRepository.findByIsArchivedFalse().stream().map(FlightMapper::toDomain).toList();
+        return jpaFlightRepository.findAll().stream().map(FlightMapper::toDomain).toList();
     }
 
     @Override

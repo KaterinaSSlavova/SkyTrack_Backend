@@ -44,6 +44,12 @@ public class FlightStatusRepositoryImpl implements FlightStatusRepository {
     }
 
     @Override
+    public Optional<FlightStatus> findFlightStatusByName(String flightStatusName){
+        return jpaFlightStatusRepository.findFlightStatusByName(flightStatusName)
+                .map(FlightStatusMapper::toDomain);
+    }
+
+    @Override
     public boolean existsById(Long statusId) {
         return jpaFlightStatusRepository.existsById(statusId);
     }

@@ -4,15 +4,15 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import skytrack.business.exception.AirportNotFoundException;
 import skytrack.business.repository.AirportRepository;
-import skytrack.business.useCase.airport.DeleteAirportUseCase;
+import skytrack.business.useCase.airport.ArchiveAirportUseCase;
 
 @Service
 @RequiredArgsConstructor
-public class DeleteAirportUseCaseImpl implements DeleteAirportUseCase {
+public class ArchiveAirportUseCaseImpl implements ArchiveAirportUseCase {
     private final AirportRepository airportRepository;
 
     @Override
-    public void deleteAirport(Long id) {
+    public void archiveAirport(Long id) {
         validateAirport(id);
         airportRepository.deleteAirport(id);
     }
