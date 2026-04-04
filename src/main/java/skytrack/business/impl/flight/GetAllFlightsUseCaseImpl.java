@@ -5,7 +5,6 @@ import org.springframework.stereotype.Service;
 import skytrack.business.mapper.FlightMapper;
 import skytrack.business.service.TimeConverter;
 import skytrack.business.useCase.flight.GetAllFlightsUseCase;
-import skytrack.domain.entity.Flight;
 import skytrack.dto.flight.FlightResponse;
 import skytrack.dto.flight.GetAllFlightsResponse;
 import skytrack.persistence.entity.FlightEntity;
