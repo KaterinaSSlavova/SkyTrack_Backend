@@ -7,7 +7,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import skytrack.business.exception.AirportNotFoundException;
 import skytrack.business.impl.airport.ArchiveAirportUseCaseImpl;
-import skytrack.domain.entity.Airport;
 import skytrack.persistence.entity.AirportEntity;
 import skytrack.persistence.repo.AirportRepository;
 
