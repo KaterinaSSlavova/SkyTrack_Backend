@@ -1,13 +1,13 @@
 package skytrack.business.mapper;
 
-import skytrack.domain.entity.Airport;
 import skytrack.dto.airport.AirportResponse;
 import skytrack.dto.airport.CreateAirportRequest;
 import skytrack.dto.airport.UpdateAirportRequest;
+import skytrack.persistence.entity.AirportEntity;
 
 public class AirportMapper {
-    public static Airport toDomain(CreateAirportRequest request){
-        return Airport.builder()
+    public static AirportEntity toEntity(CreateAirportRequest request){
+        return AirportEntity.builder()
                 .iataCode(request.getIataCode())
                 .name(request.getName())
                 .city(request.getCity())
@@ -16,7 +16,7 @@ public class AirportMapper {
                 .build();
     }
 
-    public static AirportResponse toResponse(Airport airport){
+    public static AirportResponse toResponse(AirportEntity airport){
         return AirportResponse.builder()
                 .id(airport.getId())
                 .iataCode(airport.getIataCode())
@@ -27,8 +27,8 @@ public class AirportMapper {
                 .build();
     }
 
-    public static Airport toDomain(UpdateAirportRequest request){
-        return Airport.builder()
+    public static AirportEntity toEntity(UpdateAirportRequest request){
+        return AirportEntity.builder()
                 .id(request.getId())
                 .iataCode(request.getIataCode())
                 .name(request.getName())

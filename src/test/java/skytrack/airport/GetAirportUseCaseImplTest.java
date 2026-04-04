@@ -7,9 +7,9 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import skytrack.business.exception.AirportNotFoundException;
 import skytrack.business.impl.airport.GetAirportUseCaseImpl;
-import skytrack.business.repository.AirportRepository;
-import skytrack.domain.entity.Airport;
 import skytrack.dto.airport.AirportResponse;
+import skytrack.persistence.entity.AirportEntity;
+import skytrack.persistence.repo.AirportRepository;
 
 import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
@@ -27,8 +27,8 @@ public class GetAirportUseCaseImplTest {
     @Test
     void getAirportById_shouldReturnAirport_whenAirportExists() {
         //arrange
-        Airport airport = new Airport(1L, "AMS", "Schiphol", "Amsterdam", "Netherlands", "Europe/Amsterdam");
-        when(airportRepository.getAirportById(airport.getId())).thenReturn(Optional.of(airport));
+        AirportEntity airport = new AirportEntity(1L, "AMS", "Schiphol", "Amsterdam", "Netherlands", "Europe/Amsterdam", false);
+        when(airportRepository.findByIdAndIsArchivedFalse(airport.getId())).thenReturn(Optional.of(airport));
 
         //act
         AirportResponse response = getAirportUseCaseImpl.getAirportById(airport.getId());
@@ -47,10 +47,10 @@ public class GetAirportUseCaseImplTest {
     public void getAirportById_shouldThrowAirportNotFound_whenAirportDoesNotExist() {
         //assert
         Long id = 1L;
-        when(airportRepository.getAirportById(id)).thenReturn(Optional.empty());
+        when(airportRepository.findByIdAndIsArchivedFalse(id)).thenReturn(Optional.empty());
 
         //act and arrange
         assertThrows(AirportNotFoundException.class, () -> getAirportUseCaseImpl.getAirportById(id));
-        verify(airportRepository).getAirportById(id);
+        verify(airportRepository).findByIdAndIsArchivedFalse(id);
     }
 }

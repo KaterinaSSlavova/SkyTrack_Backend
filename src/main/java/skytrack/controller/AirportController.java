@@ -48,7 +48,7 @@ public class AirportController {
     }
 
     @PatchMapping("{id}")
-    public ResponseEntity<Void> deleteAirport(@PathVariable("id")final Long id) {
+    public ResponseEntity<Void> archiveAirport(@PathVariable("id")final Long id) {
         archiveAirportUseCase.archiveAirport(id);
         return ResponseEntity.noContent().build();
     }

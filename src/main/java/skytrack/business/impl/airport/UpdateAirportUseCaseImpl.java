@@ -4,24 +4,27 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import skytrack.business.exception.AirportNotFoundException;
 import skytrack.business.mapper.AirportMapper;
-import skytrack.business.repository.AirportRepository;
+import skytrack.business.service.AirportValidationService;
 import skytrack.business.useCase.airport.UpdateAirportUseCase;
-import skytrack.domain.entity.Airport;
 import skytrack.dto.airport.UpdateAirportRequest;
+import skytrack.persistence.entity.AirportEntity;
+import skytrack.persistence.repo.AirportRepository;
 
 @Service
 @RequiredArgsConstructor
 public class UpdateAirportUseCaseImpl implements UpdateAirportUseCase {
     private final AirportRepository airportRepository;
+    private final AirportValidationService airportValidationService;
 
     @Override
     public void updateAirport(UpdateAirportRequest request) {
-        validateAirport(request.getId());
-        Airport updatedAirport = AirportMapper.toDomain(request);
-        airportRepository.updateAirport(updatedAirport);
+        validateAirportExists(request.getId());
+        AirportEntity updatedAirport = AirportMapper.toEntity(request);
+        airportValidationService.validateAirport(updatedAirport);
+        airportRepository.save(updatedAirport);
     }
 
-    private void validateAirport(Long id) {
+    private void validateAirportExists(Long id) {
         if(!airportRepository.existsById(id)){
             throw new AirportNotFoundException(id);
         }

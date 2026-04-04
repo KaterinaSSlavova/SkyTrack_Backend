@@ -3,8 +3,9 @@ package skytrack.business.impl.airport;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import skytrack.business.exception.AirportNotFoundException;
-import skytrack.business.repository.AirportRepository;
 import skytrack.business.useCase.airport.ArchiveAirportUseCase;
+import skytrack.persistence.entity.AirportEntity;
+import skytrack.persistence.repo.AirportRepository;
 
 @Service
 @RequiredArgsConstructor
@@ -13,13 +14,9 @@ public class ArchiveAirportUseCaseImpl implements ArchiveAirportUseCase {
 
     @Override
     public void archiveAirport(Long id) {
-        validateAirport(id);
-        airportRepository.deleteAirport(id);
-    }
-
-    private void validateAirport(Long id) {
-        if(!airportRepository.existsById(id)) {
-            throw new AirportNotFoundException(id);
-        }
+        AirportEntity entity = airportRepository.findByIdAndIsArchivedFalse(id)
+                .orElseThrow(() -> new AirportNotFoundException(id));
+        entity.setIsArchived(true);
+        airportRepository.save(entity);
     }
 }

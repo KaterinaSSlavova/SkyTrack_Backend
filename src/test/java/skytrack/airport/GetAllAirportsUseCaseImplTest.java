@@ -6,9 +6,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import skytrack.business.impl.airport.GetAllAirportsUseCaseImpl;
-import skytrack.business.repository.AirportRepository;
-import skytrack.domain.entity.Airport;
 import skytrack.dto.airport.GetAllAirports;
+import skytrack.persistence.entity.AirportEntity;
+import skytrack.persistence.repo.AirportRepository;
 
 import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
@@ -18,19 +18,19 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 public class GetAllAirportsUseCaseImplTest {
     @Mock
-    AirportRepository airportRepository;
+    private AirportRepository airportRepository;
 
     @InjectMocks
-    GetAllAirportsUseCaseImpl getAllAirportsUseCaseImpl;
+    private GetAllAirportsUseCaseImpl getAllAirportsUseCaseImpl;
 
     @Test
     void getAllAirports_shouldReturnAirports_whenAirportsExist() {
         //arrange
-        List<Airport> airports = List.of(
-                new Airport(1L, "AMS", "Schiphol", "Amsterdam", "Netherlands", "Europe/Amsterdam"),
-                new Airport(2L, "ATH", "Athens Airport", "Athens", "Greece", "Europe/Athens")
+        List<AirportEntity> airports = List.of(
+                new AirportEntity(1L, "AMS", "Schiphol", "Amsterdam", "Netherlands", "Europe/Amsterdam", false),
+                new AirportEntity(2L, "ATH", "Athens Airport", "Athens", "Greece", "Europe/Athens", false)
         );
-        when(airportRepository.getAllAirports()).thenReturn(airports);
+        when(airportRepository.findByIsArchivedFalse()).thenReturn(airports);
 
         //act
         GetAllAirports response = getAllAirportsUseCaseImpl.getAllAirports();
@@ -43,14 +43,14 @@ public class GetAllAirportsUseCaseImplTest {
     @Test
     public void getAllAirports_shouldReturnEmptyList_whenNoAirportsExist() {
         //arrange
-        when(airportRepository.getAllAirports()).thenReturn(List.of());
+        when(airportRepository.findByIsArchivedFalse()).thenReturn(List.of());
 
         //act
         GetAllAirports response = getAllAirportsUseCaseImpl.getAllAirports();
 
         //assert
         assertTrue(response.getAirports().isEmpty());
-        verify(airportRepository).getAllAirports();
+        verify(airportRepository).findByIsArchivedFalse();
 
     }
 }

@@ -6,15 +6,16 @@ import skytrack.business.exception.AirportNotFoundException;
 import skytrack.business.exception.FlightNotFoundException;
 import skytrack.business.exception.FlightStatusNotFoundException;
 import skytrack.business.mapper.FlightMapper;
-import skytrack.business.repository.AirportRepository;
-import skytrack.business.repository.FlightRepository;
-import skytrack.business.repository.FlightStatusRepository;
+import skytrack.business.service.FlightValidationService;
 import skytrack.business.service.TimeConverter;
 import skytrack.business.useCase.flight.UpdateFlightUseCase;
-import skytrack.domain.entity.Airport;
-import skytrack.domain.entity.Flight;
-import skytrack.domain.entity.FlightStatus;
 import skytrack.dto.flight.UpdateFlightRequest;
+import skytrack.persistence.entity.AirportEntity;
+import skytrack.persistence.entity.FlightEntity;
+import skytrack.persistence.entity.FlightStatusEntity;
+import skytrack.persistence.repo.AirportRepository;
+import skytrack.persistence.repo.FlightRepository;
+import skytrack.persistence.repo.FlightStatusRepository;
 
 import java.time.Instant;
 
@@ -25,33 +26,32 @@ public class UpdateFlightUseCaseImpl implements UpdateFlightUseCase {
     private final AirportRepository airportRepository;
     private final TimeConverter timeConverter;
     private final FlightStatusRepository fStatusRepository;
+    private final FlightValidationService flightValidationService;
 
     @Override
     public void updateFlight(UpdateFlightRequest request) {
-       validateFlight(request.getId());
-       Airport depAirport = findAirport(request.getDepartureAirportId());
-       Airport arrAirport = findAirport(request.getArrivalAirportId());
+       FlightEntity existingFlight = findFlight(request.getId());
+       AirportEntity depAirport = findAirport(request.getDepartureAirportId());
+       AirportEntity arrAirport = findAirport(request.getArrivalAirportId());
        Instant depTimeUTC = timeConverter.convertToUTC(request.getDepartureLocalTime(), depAirport.getTimezone());
        Instant arrTimeUTC = timeConverter.convertToUTC(request.getArrivalLocalTime(), arrAirport.getTimezone());
-       FlightStatus status = findFlightStatus(request.getStatusId());
-
-       Flight updatedFlight = FlightMapper.toDomain(request, depAirport, arrAirport, depTimeUTC, arrTimeUTC, status);
-       flightRepository.updateFlight(updatedFlight);
+       FlightStatusEntity status = findFlightStatus(request.getStatusId());
+       FlightMapper.updateEntity(existingFlight, request, depAirport, arrAirport, depTimeUTC, arrTimeUTC, status);
+       flightValidationService.validateFlight(existingFlight);
+       flightRepository.save(existingFlight);
     }
 
-    private void validateFlight(Long id) {
-       if(!flightRepository.existsById(id)) {
-           throw new FlightNotFoundException(id);
-       }
+    private FlightEntity findFlight(Long id) {
+       return flightRepository.findById(id).orElseThrow(() -> new FlightNotFoundException(id));
     }
 
-    private Airport findAirport(Long id){
-        return airportRepository.getAirportById(id)
+    private AirportEntity findAirport(Long id){
+        return airportRepository.findById(id)
                 .orElseThrow(() -> new AirportNotFoundException(id));
     }
 
-    private FlightStatus findFlightStatus(Long id){
-        return fStatusRepository.getFlightStatusById(id)
+    private FlightStatusEntity findFlightStatus(Long id){
+        return fStatusRepository.findById(id)
                 .orElseThrow(() -> new FlightStatusNotFoundException(id));
     }
 }

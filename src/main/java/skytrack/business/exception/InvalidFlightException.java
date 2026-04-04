@@ -1,4 +1,4 @@
-package skytrack.domain.exception;
+package skytrack.business.exception;
 
 public class InvalidFlightException extends RuntimeException{
     public static final String FLIGHT_NUM_NULL = "Flight number cannot be null or blank!";

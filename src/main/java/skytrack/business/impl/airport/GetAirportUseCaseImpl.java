@@ -4,10 +4,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import skytrack.business.exception.AirportNotFoundException;
 import skytrack.business.mapper.AirportMapper;
-import skytrack.business.repository.AirportRepository;
 import skytrack.business.useCase.airport.GetAirportUseCase;
-import skytrack.domain.entity.Airport;
 import skytrack.dto.airport.AirportResponse;
+import skytrack.persistence.entity.AirportEntity;
+import skytrack.persistence.repo.AirportRepository;
 
 @Service
 @RequiredArgsConstructor
@@ -16,7 +16,8 @@ public class GetAirportUseCaseImpl implements GetAirportUseCase {
 
     @Override
     public AirportResponse getAirportById(Long id) {
-        Airport airport = airportRepository.getAirportById(id).orElseThrow(() -> new AirportNotFoundException(id));
+        AirportEntity airport = airportRepository.findByIdAndIsArchivedFalse(id)
+                .orElseThrow(() -> new AirportNotFoundException(id));
         return AirportMapper.toResponse(airport);
     }
 }

@@ -10,6 +10,7 @@ import org.hibernate.type.SqlTypes;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
+@Builder
 @Table(name = "airport")
 public class AirportEntity {
     @Id
@@ -26,6 +27,7 @@ public class AirportEntity {
     private String country;
     private String timezone;
 
-    @Column(name="is_archived")
-    private Boolean isArchived;
+    @Builder.Default
+    @Column(name = "is_archived", nullable = false)
+    private Boolean isArchived = false;
 }

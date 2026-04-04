@@ -7,7 +7,11 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import skytrack.business.exception.AirportNotFoundException;
 import skytrack.business.impl.airport.ArchiveAirportUseCaseImpl;
-import skytrack.business.repository.AirportRepository;
+import skytrack.domain.entity.Airport;
+import skytrack.persistence.entity.AirportEntity;
+import skytrack.persistence.repo.AirportRepository;
+
+import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
@@ -25,24 +29,26 @@ public class ArchiveAirportUseCaseImplTest {
     @Test
     public void archiveAirport_shouldArchiveAirport_whenAirportExists() {
         //arrange
-        Long id = 1L;
-        when(airportRepository.existsById(id)).thenReturn(true);
+        AirportEntity airport = new AirportEntity(1L, "AMS", "Schiphol", "Amsterdam", "Netherlands", "Europe/Amsterdam",false);
+        when(airportRepository.findByIdAndIsArchivedFalse(airport.getId()))
+                .thenReturn(Optional.of(airport));
 
         //act
-        archiveAirportUseCaseImpl.archiveAirport(id);
+        archiveAirportUseCaseImpl.archiveAirport(airport.getId());
 
         //assert
-        verify(airportRepository).deleteAirport(id);
+        assertTrue(airport.getIsArchived());
+        verify(airportRepository).save(airport);
     }
 
     @Test
     public void archiveAirport_shouldNotArchiveAirport_whenAirportDoNotExists() {
        //arrange
         Long id = 1L;
-        when(airportRepository.existsById(id)).thenReturn(false);
+        when(airportRepository.findByIdAndIsArchivedFalse(id)).thenReturn(Optional.empty());
 
         //act and assert
         assertThrows(AirportNotFoundException.class, () -> archiveAirportUseCaseImpl.archiveAirport(id));
-        verify(airportRepository, never()).deleteAirport(id);
+        verify(airportRepository, never()).save(any(AirportEntity.class));
     }
 }

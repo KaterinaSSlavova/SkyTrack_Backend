@@ -6,7 +6,8 @@ import skytrack.persistence.entity.AirportEntity;
 import java.util.List;
 import java.util.Optional;
 
-public interface JpaAirportRepository extends JpaRepository<AirportEntity, Long> {
+public interface AirportRepository extends JpaRepository<AirportEntity, Long> {
     List<AirportEntity> findByIsArchivedFalse();
     Optional<AirportEntity> findByIdAndIsArchivedFalse(Long id);
+    boolean existsByIataCode(String iataCode);
 }

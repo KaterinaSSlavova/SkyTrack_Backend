@@ -1,4 +1,4 @@
-package skytrack.domain.exception;
+package skytrack.business.exception;
 
 public class InvalidAirportException extends RuntimeException {
     public static final String INVALID_IATA = "Airport code must be 3 letters!";

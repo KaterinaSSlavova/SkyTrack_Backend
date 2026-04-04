@@ -1,23 +1,24 @@
 package skytrack.business.mapper;
 
-import skytrack.domain.entity.Airport;
-import skytrack.domain.entity.Flight;
-import skytrack.domain.entity.FlightStatus;
 import skytrack.dto.flight.CreateFlightRequest;
 import skytrack.dto.flight.FlightResponse;
 import skytrack.dto.flight.UpdateFlightRequest;
+import skytrack.persistence.entity.AirportEntity;
+import skytrack.persistence.entity.FlightEntity;
+import skytrack.persistence.entity.FlightStatusEntity;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
 
 public class FlightMapper {
-    public static Flight toDomain (CreateFlightRequest request,
-                                    Airport depAirport,
-                                    Airport arrAirport,
-                                    Instant depTimeUTC,
-                                    Instant arrTimeUTC,
-                                    FlightStatus status){
-        return new Flight(null,
+    public static FlightEntity toEntity (CreateFlightRequest request,
+                                         AirportEntity depAirport,
+                                         AirportEntity arrAirport,
+                                         Instant depTimeUTC,
+                                         Instant arrTimeUTC,
+                                         FlightStatusEntity status){
+        return new FlightEntity(
+                null,
                 request.getFlightNumber(),
                 depAirport,
                 arrAirport,
@@ -27,11 +28,12 @@ public class FlightMapper {
                 request.getTerminal(),
                 request.getCapacity(),
                 request.getPrice(),
-                status
+                status,
+                Instant.now()
                 );
     }
 
-    public static FlightResponse toResponse(Flight flight, LocalDateTime depLocalTime, LocalDateTime arrLocalTime) {
+    public static FlightResponse toResponse(FlightEntity flight, LocalDateTime depLocalTime, LocalDateTime arrLocalTime) {
         return new FlightResponse(
                 flight.getId(),
                 flight.getFlightNumber(),
@@ -49,24 +51,23 @@ public class FlightMapper {
         );
     }
 
-    public static Flight toDomain (UpdateFlightRequest request,
-                                   Airport depAirport,
-                                   Airport arrAirport,
-                                   Instant depTimeUTC,
-                                   Instant arrTimeUTC,
-                                   FlightStatus status){
-        return new Flight(
-                request.getId(),
-                request.getFlightNumber(),
-                depAirport,
-                arrAirport,
-                depTimeUTC,
-                arrTimeUTC,
-                request.getGate(),
-                request.getTerminal(),
-                request.getCapacity(),
-                request.getPrice(),
-                status
-        );
+    public static void updateEntity(FlightEntity entity,
+                                    UpdateFlightRequest request,
+                                    AirportEntity depAirport,
+                                    AirportEntity arrAirport,
+                                    Instant depTimeUTC,
+                                    Instant arrTimeUTC,
+                                    FlightStatusEntity status) {
+        entity.setId(request.getId());
+        entity.setFlightNumber(request.getFlightNumber());
+        entity.setDepartureAirport(depAirport);
+        entity.setArrivalAirport(arrAirport);
+        entity.setDepartureTimeUTC(depTimeUTC);
+        entity.setArrivalTimeUTC(arrTimeUTC);
+        entity.setGate(request.getGate());
+        entity.setTerminal(request.getTerminal());
+        entity.setCapacity(request.getCapacity());
+        entity.setPrice(request.getPrice());
+        entity.setStatus(status);
     }
 }

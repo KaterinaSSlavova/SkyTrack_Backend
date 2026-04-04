@@ -5,16 +5,17 @@ import org.springframework.stereotype.Service;
 import skytrack.business.exception.AirportNotFoundException;
 import skytrack.business.exception.FlightStatusNotFoundException;
 import skytrack.business.mapper.FlightMapper;
-import skytrack.business.repository.AirportRepository;
-import skytrack.business.repository.FlightRepository;
-import skytrack.business.repository.FlightStatusRepository;
+import skytrack.business.service.FlightValidationService;
 import skytrack.business.service.TimeConverter;
 import skytrack.business.useCase.flight.CreateFlightUseCase;
-import skytrack.domain.entity.Airport;
-import skytrack.domain.entity.Flight;
-import skytrack.domain.entity.FlightStatus;
 import skytrack.dto.flight.CreateFlightRequest;
 import skytrack.dto.flight.FlightResponse;
+import skytrack.persistence.entity.AirportEntity;
+import skytrack.persistence.entity.FlightEntity;
+import skytrack.persistence.entity.FlightStatusEntity;
+import skytrack.persistence.repo.AirportRepository;
+import skytrack.persistence.repo.FlightRepository;
+import skytrack.persistence.repo.FlightStatusRepository;
 
 import java.time.Instant;
 
@@ -25,16 +26,18 @@ public class CreateFlightUseCaseImpl implements CreateFlightUseCase {
     private final AirportRepository airportRepository;
     private final FlightStatusRepository flightStatusRepository;
     private final TimeConverter timeConverter;
+    private final FlightValidationService flightValidationService;
 
     @Override
     public FlightResponse createFlight(CreateFlightRequest request) {
-        Airport depAirport = validateAirport(request.getDepartureAirportId());
-        Airport arrAirport = validateAirport(request.getArrivalAirportId());
-        FlightStatus status = validateFlightStatus(request.getStatusId());
+        AirportEntity depAirport = findAirport(request.getDepartureAirportId());
+        AirportEntity arrAirport = findAirport(request.getArrivalAirportId());
+        FlightStatusEntity status = validateFlightStatus(request.getStatusId());
         Instant depTime = timeConverter.convertToUTC(request.getDepartureLocalTime(), depAirport.getTimezone());
         Instant arrTime = timeConverter.convertToUTC(request.getArrivalLocalTime(), arrAirport.getTimezone());
-        Flight flight = FlightMapper.toDomain(request,depAirport,arrAirport,depTime, arrTime, status);
-        Flight savedFlight = flightRepository.saveFlight(flight);
+        FlightEntity flight = FlightMapper.toEntity(request,depAirport,arrAirport,depTime, arrTime, status);
+        flightValidationService.validateFlight(flight);
+        FlightEntity savedFlight = flightRepository.save(flight);
         return FlightMapper.toResponse(savedFlight,
                 timeConverter.convertToLocalTime
                         (savedFlight.getDepartureTimeUTC(),savedFlight.getDepartureAirport().getTimezone()),
@@ -43,13 +46,13 @@ public class CreateFlightUseCaseImpl implements CreateFlightUseCase {
                 );
     }
 
-    private Airport validateAirport(Long id){
-        return airportRepository.getAirportById(id)
-                .orElseThrow(() -> new AirportNotFoundException(id));
+    private AirportEntity findAirport(Long id){
+        return airportRepository.findById(id).orElseThrow(() -> new AirportNotFoundException(id));
     }
 
-    private FlightStatus validateFlightStatus(Long id){
-        return flightStatusRepository.getFlightStatusById(id)
+    private FlightStatusEntity validateFlightStatus(Long id){
+        return flightStatusRepository.findById(id)
                 .orElseThrow(() -> new FlightStatusNotFoundException(id));
+
     }
 }

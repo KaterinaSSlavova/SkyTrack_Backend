@@ -3,11 +3,11 @@ package skytrack.business.impl.airport;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import skytrack.business.mapper.AirportMapper;
-import skytrack.business.repository.AirportRepository;
 import skytrack.business.useCase.airport.GetAllAirportsUseCase;
-import skytrack.domain.entity.Airport;
 import skytrack.dto.airport.AirportResponse;
 import skytrack.dto.airport.GetAllAirports;
+import skytrack.persistence.entity.AirportEntity;
+import skytrack.persistence.repo.AirportRepository;
 
 import java.util.List;
 
@@ -18,7 +18,7 @@ public class GetAllAirportsUseCaseImpl implements GetAllAirportsUseCase {
 
     @Override
     public GetAllAirports getAllAirports() {
-        List<Airport> airports = airportRepository.getAllAirports();
+        List<AirportEntity> airports = airportRepository.findByIsArchivedFalse();
         List<AirportResponse> response = airports.stream().map(AirportMapper::toResponse).toList();
         return new GetAllAirports(response);
     }
