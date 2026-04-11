@@ -2,8 +2,8 @@ package skytrack.business.impl.flight;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import skytrack.business.exception.AirportNotFoundException;
-import skytrack.business.exception.FlightStatusNotFoundException;
+import skytrack.business.exception.airport.AirportNotFoundException;
+import skytrack.business.exception.flight.FlightStatusNotFoundException;
 import skytrack.business.mapper.FlightMapper;
 import skytrack.business.service.FlightValidationService;
 import skytrack.business.service.TimeConverter;

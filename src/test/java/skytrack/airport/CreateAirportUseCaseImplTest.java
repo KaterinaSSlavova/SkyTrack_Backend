@@ -5,7 +5,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import skytrack.business.exception.AirportAlreadyExistsException;
+import skytrack.business.exception.airport.AirportAlreadyExistsException;
 import skytrack.business.impl.airport.CreateAirportUseCaseImpl;
 import skytrack.business.service.AirportValidationService;
 import skytrack.dto.airport.AirportResponse;

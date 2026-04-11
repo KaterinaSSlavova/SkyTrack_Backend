@@ -58,7 +58,7 @@ public class FlightMapper {
                                     Instant depTimeUTC,
                                     Instant arrTimeUTC,
                                     FlightStatusEntity status) {
-        entity.setId(request.getId());
+        entity.setId(entity.getId());
         entity.setFlightNumber(request.getFlightNumber());
         entity.setDepartureAirport(depAirport);
         entity.setArrivalAirport(arrAirport);

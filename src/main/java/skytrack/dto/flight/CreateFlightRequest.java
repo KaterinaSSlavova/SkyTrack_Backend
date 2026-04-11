@@ -12,32 +12,34 @@ import java.time.LocalDateTime;
 @Getter
 @AllArgsConstructor
 public class CreateFlightRequest {
-    @NotBlank
+
+    @NotBlank(message = "Flight number is required.")
     private String flightNumber;
 
-    @NotNull
+    @NotNull(message = "Departure airport is required.")
     private Long departureAirportId;
 
-    @NotNull
+    @NotNull(message = "Arrival airport is required.")
     private Long arrivalAirportId;
 
-    @NotNull
+    @NotNull(message = "Departure time is required.")
     private LocalDateTime departureLocalTime;
 
-    @NotNull
+    @NotNull(message = "Arrival time is required.")
     private LocalDateTime arrivalLocalTime;
 
     private String gate;
+
     private String terminal;
 
-    @NotNull
-    @Positive
+    @NotNull(message = "Capacity is required.")
+    @Positive(message = "Capacity must be greater than 0.")
     private Integer capacity;
 
-    @NotNull
-    @Positive
+    @NotNull(message = "Price is required.")
+    @Positive(message = "Price must be greater than 0.")
     private BigDecimal price;
 
-    @NotNull
+    @NotNull(message = "Flight status is required.")
     private Long statusId;
 }

@@ -2,7 +2,7 @@ package skytrack.business.impl.airport;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import skytrack.business.exception.AirportNotFoundException;
+import skytrack.business.exception.airport.AirportNotFoundException;
 import skytrack.business.useCase.airport.ArchiveAirportUseCase;
 import skytrack.persistence.entity.AirportEntity;
 import skytrack.persistence.repo.AirportRepository;

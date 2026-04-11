@@ -1,4 +1,4 @@
-package skytrack.business.exception;
+package skytrack.business.exception.flight;
 
 public class FlightNotFoundException extends RuntimeException {
     public FlightNotFoundException(Long id) {

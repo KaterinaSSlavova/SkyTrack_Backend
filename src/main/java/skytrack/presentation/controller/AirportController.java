@@ -1,4 +1,4 @@
-package skytrack.controller;
+package skytrack.presentation.controller;
 
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
@@ -11,6 +11,8 @@ import skytrack.dto.airport.CreateAirportRequest;
 import skytrack.dto.airport.GetAllAirports;
 import skytrack.dto.airport.UpdateAirportRequest;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/airports")
 @AllArgsConstructor
@@ -20,6 +22,7 @@ public class AirportController {
     private final CreateAirportUseCase createAirportUseCase;
     private final UpdateAirportUseCase updateAirportUseCase;
     private final ArchiveAirportUseCase archiveAirportUseCase;
+    private final SearchAirportUseCase searchAirportUseCase;
 
     @GetMapping
     public ResponseEntity<GetAllAirports> getAllAirports() {
@@ -51,5 +54,11 @@ public class AirportController {
     public ResponseEntity<Void> archiveAirport(@PathVariable("id")final Long id) {
         archiveAirportUseCase.archiveAirport(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<List<AirportResponse>> searchAirports(@RequestParam String input){
+        List<AirportResponse> response = searchAirportUseCase.searchAirport(input);
+        return ResponseEntity.ok(response);
     }
 }

@@ -1,7 +1,7 @@
 package skytrack.business.service;
 
 import org.springframework.stereotype.Service;
-import skytrack.business.exception.InvalidFlightException;
+import skytrack.business.exception.flight.InvalidFlightException;
 import skytrack.persistence.entity.FlightEntity;
 
 import java.math.BigDecimal;

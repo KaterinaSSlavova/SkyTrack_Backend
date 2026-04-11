@@ -13,8 +13,8 @@ import java.time.LocalDateTime;
 public class FlightResponse {
     private Long id;
     private String flightNumber;
-    private String departureIATACode;
-    private String ArrivalIATACode;
+    private String departureIataCode;
+    private String arrivalIataCode;
     private LocalDateTime departureLocalTime;
     private LocalDateTime arrivalLocalTime;
     private String departureTimezone;

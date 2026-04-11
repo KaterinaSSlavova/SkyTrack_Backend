@@ -1,13 +1,13 @@
 package skytrack.business.service;
 
 import org.springframework.stereotype.Service;
-import skytrack.business.exception.InvalidAirportException;
+import skytrack.business.exception.airport.InvalidAirportException;
 import skytrack.persistence.entity.AirportEntity;
 
 @Service
 public class AirportValidationService {
     public void validateAirport(AirportEntity airport){
-        if(airport.getIataCode() == null || airport.getIataCode().length() != 3){
+        if(airport.getIataCode() == null || !airport.getIataCode().matches("^[A-Z]{3}$")){
             throw new InvalidAirportException(InvalidAirportException.INVALID_IATA);
         }
 

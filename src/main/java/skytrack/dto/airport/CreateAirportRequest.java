@@ -10,18 +10,18 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class CreateAirportRequest {
 
-    @NotBlank
+    @NotBlank(message = "IATA code is required.")
     private String iataCode;
 
-    @NotBlank
+    @NotBlank(message = "Airport name is required.")
     private String name;
 
-    @NotBlank
+    @NotBlank(message = "City is required.")
     private String city;
 
-    @NotBlank
+    @NotBlank(message = "Country is required.")
     private String country;
 
-    @NotBlank
+    @NotBlank(message = "Timezone is required.")
     private String timezone;
 }

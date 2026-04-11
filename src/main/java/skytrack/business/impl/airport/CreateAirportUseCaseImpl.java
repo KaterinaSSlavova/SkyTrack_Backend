@@ -2,7 +2,7 @@ package skytrack.business.impl.airport;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import skytrack.business.exception.AirportAlreadyExistsException;
+import skytrack.business.exception.airport.AirportAlreadyExistsException;
 import skytrack.business.mapper.AirportMapper;
 import skytrack.business.service.AirportValidationService;
 import skytrack.business.useCase.airport.CreateAirportUseCase;

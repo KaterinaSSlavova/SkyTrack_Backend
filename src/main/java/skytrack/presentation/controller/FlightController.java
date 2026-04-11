@@ -1,7 +1,7 @@
-package skytrack.controller;
+package skytrack.presentation.controller;
 
 import jakarta.validation.Valid;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -11,15 +11,19 @@ import skytrack.dto.flight.FlightResponse;
 import skytrack.dto.flight.GetAllFlightsResponse;
 import skytrack.dto.flight.UpdateFlightRequest;
 
+import java.time.LocalDate;
+import java.util.List;
+
 @RestController
 @RequestMapping("/flights")
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class FlightController {
     private final CreateFlightUseCase createFlightUseCase;
     private final GetFlightUseCase getFlightUseCase;
     private final GetAllFlightsUseCase getAllFlightsUseCase;
     private final UpdateFlightUseCase updateFlightUseCase;
     private final CancelFlightUseCase cancelFlightUseCase;
+    private final SearchFlightUseCase searchFlightUseCase;
 
     @GetMapping
     public ResponseEntity<GetAllFlightsResponse> getAllFlights(){
@@ -48,5 +52,12 @@ public class FlightController {
     public ResponseEntity<Void> cancelFlight(@PathVariable("id") final Long id){
         cancelFlightUseCase.cancelFlight(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<List<FlightResponse>> searchFlights
+            (@RequestParam String departureIata, @RequestParam String arrivalIata, @RequestParam LocalDate departureDate){
+        List<FlightResponse> response = searchFlightUseCase.searchFlights(departureIata, arrivalIata, departureDate);
+        return ResponseEntity.ok(response);
     }
 }

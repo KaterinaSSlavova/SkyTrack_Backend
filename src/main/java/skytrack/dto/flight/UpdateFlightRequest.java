@@ -18,32 +18,23 @@ import java.time.LocalDateTime;
 public class UpdateFlightRequest {
     private Long id;
 
-    @NotBlank
+    @NotBlank(message = "Flight number is required.")
     private String flightNumber;
-
-    @NotNull
     private Long departureAirportId;
-
-    @NotNull
     private Long arrivalAirportId;
-
-    @NotNull
     private LocalDateTime departureLocalTime;
-
-    @NotNull
     private LocalDateTime arrivalLocalTime;
 
     private String gate;
+
     private String terminal;
 
-    @NotNull
-    @Positive
+    @NotNull(message = "Capacity is required.")
+    @Positive(message = "Capacity must be greater than 0.")
     private Integer capacity;
 
-    @NotNull
-    @Positive
+    @NotNull(message = "Price is required.")
+    @Positive(message = "Price must be greater than 0.")
     private BigDecimal price;
-
-    @NotNull
     private Long statusId;
 }
