@@ -1,7 +1,6 @@
 stages:
   - test
   - sonarqube-check
-  - docker
   - deploy
 
 test:
@@ -14,6 +13,7 @@ sonarqube-check:
   variables:
     SONAR_USER_HOME: "${CI_PROJECT_DIR}/.sonar"
     GIT_DEPTH: "0"
+    SONAR_HOST_URL: "http://localhost:9000"
   cache:
     key: "${CI_JOB_NAME}"
     paths:
@@ -24,21 +24,12 @@ sonarqube-check:
   rules:
     - if: '$CI_COMMIT_BRANCH == "dev"'
 
-docker-build-push:
-  stage: docker
-  script:
-    - docker login git.fhict.nl -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD"
-    - docker build -t git.fhict.nl/i547761/skytrack:latest .
-    - docker push git.fhict.nl/i547761/skytrack:latest
-  rules:
-    - if: '$CI_COMMIT_BRANCH == "dev"'
-
 deploy:
   stage: deploy
   script:
-    - docker login git.fhict.nl -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD"
-    - cd /opt/skytrack
-    - docker compose pull backend
-    - docker compose up -d backend
+    - docker build -t skytrack-backend:latest .
+    - docker stop skytrack-backend || true
+    - docker rm skytrack-backend || true
+    - docker run -d --name skytrack-backend --restart unless-stopped --env-file /opt/skytrack/.env -p 8080:8080 skytrack-backend:latest
   rules:
     - if: '$CI_COMMIT_BRANCH == "dev"'
