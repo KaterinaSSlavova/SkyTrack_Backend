@@ -1,12 +1,11 @@
 stages:
-- build
 - test
 - sonarqube-check
+- docker
+- deploy
 
-build:
-  stage: build
-  script:
-    - ./gradlew assemble --no-daemon
+variables:
+  IMAGE_TAG: $CI_REGISTRY_IMAGE:latest
 
 test:
   stage: test
@@ -16,8 +15,8 @@ test:
 sonarqube-check:
   stage: sonarqube-check
   variables:
-    SONAR_USER_HOME: "${CI_PROJECT_DIR}/.sonar"  # Defines the location of the analysis task cache
-    GIT_DEPTH: "0"  # Tells git to fetch all the branches of the project, required by the analysis task
+    SONAR_USER_HOME: "${CI_PROJECT_DIR}/.sonar"
+    GIT_DEPTH: "0"
   cache:
     key: "${CI_JOB_NAME}"
     paths:
@@ -25,6 +24,23 @@ sonarqube-check:
   script:
     - ./gradlew build jacocoTestReport sonar --no-daemon -Dsonar.qualitygate.wait=true
   allow_failure: true
-  only:
-    - main
-    - dev
+  rules:
+    - if: '$ICT_COMMIT_BRANCH == "dev"'
+
+docker-build-push:
+  stage: docker
+  script:
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
+    - docker build -t "$IMAGE_TAG" .
+    - docker push "$IMAGE_TAG"
+  rules:
+    - if: '$ICT_COMMIT_BRANCH == "dev"'
+
+deploy:
+  stage: deploy
+  script:
+    - cd /opt/skytrack
+    - docker compose pull backend
+    - docker compose up -d backend
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "dev"'
