@@ -1,12 +1,18 @@
 stages:
+  - build
   - test
   - sonarqube-check
   - deploy
 
+build:
+  stage: build
+  script:
+    - ./gradlew assemble --no-daemon
+
 test:
   stage: test
   script:
-    - ./gradlew test assemble --no-daemon
+    - ./gradlew test --no-daemon
 
 sonarqube-check:
   stage: sonarqube-check
