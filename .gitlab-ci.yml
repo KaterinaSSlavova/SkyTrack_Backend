@@ -1,11 +1,8 @@
 stages:
-- test
-- sonarqube-check
-- docker
-- deploy
-
-variables:
-  IMAGE_TAG: $CI_REGISTRY_IMAGE:latest
+  - test
+  - sonarqube-check
+  - docker
+  - deploy
 
 test:
   stage: test
@@ -25,21 +22,21 @@ sonarqube-check:
     - ./gradlew build jacocoTestReport sonar --no-daemon -Dsonar.qualitygate.wait=true
   allow_failure: true
   rules:
-    - if: '$ICT_COMMIT_BRANCH == "dev"'
+    - if: '$CI_COMMIT_BRANCH == "dev"'
 
 docker-build-push:
   stage: docker
   script:
-    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
-    - docker build -t "$IMAGE_TAG" .
-    - docker push "$IMAGE_TAG"
+    - docker login git.fhict.nl -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD"
+    - docker build -t git.fhict.nl/i547761/skytrack:latest .
+    - docker push git.fhict.nl/i547761/skytrack:latest
   rules:
     - if: '$CI_COMMIT_BRANCH == "dev"'
 
 deploy:
   stage: deploy
   script:
-    - docker login "$CI_REGISTRY" -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD"
+    - docker login git.fhict.nl -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD"
     - cd /opt/skytrack
     - docker compose pull backend
     - docker compose up -d backend
