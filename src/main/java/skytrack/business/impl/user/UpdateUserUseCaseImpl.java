@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import skytrack.business.exception.user.UserNotFoundException;
+import skytrack.business.exception.user.UserTooOldException;
 import skytrack.business.exception.user.UserTooYoungException;
 import skytrack.business.mapper.UserMapper;
 import skytrack.business.useCase.user.UpdateUserUseCase;
@@ -45,6 +46,7 @@ public class UpdateUserUseCaseImpl implements UpdateUserUseCase {
         if(request.getBirthDate() !=null){
             int age = Period.between(request.getBirthDate(), LocalDate.now()).getYears();
             if(age < 16) throw new UserTooYoungException();
+            if(age > 120) throw new UserTooOldException();
             user.setBirthdate(request.getBirthDate());
         }
 

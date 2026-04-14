@@ -15,8 +15,6 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @Builder
 public class RegisterUserRequest {
-
-    @NotBlank(message = "Profile picture is required.")
     private String picture;
 
     @NotBlank(message = "First name is required.")

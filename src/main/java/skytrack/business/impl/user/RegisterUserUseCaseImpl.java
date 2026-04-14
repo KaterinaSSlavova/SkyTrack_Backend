@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import skytrack.business.exception.user.RoleNotFoundException;
 import skytrack.business.exception.user.UserEmailAlreadyExistsException;
+import skytrack.business.exception.user.UserTooOldException;
 import skytrack.business.exception.user.UserTooYoungException;
 import skytrack.business.mapper.UserMapper;
 import skytrack.business.service.PasswordService;
@@ -32,6 +33,7 @@ public class RegisterUserUseCaseImpl implements RegisterUserUseCase {
         if(userRepository.existsByEmail(request.getEmail())) throw new UserEmailAlreadyExistsException(request.getEmail());
         int age = Period.between(request.getBirthDate(), LocalDate.now()).getYears();
         if(age < 16) throw new UserTooYoungException();
+        if(age > 120) throw new UserTooOldException();
 
         UserEntity user = UserMapper.toEntity(request);
         user.setPasswordHash(passwordService.HashPassword(request.getPassword()));

@@ -94,6 +94,18 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
     }
 
+    @ExceptionHandler(UserTooOldException.class)
+    public ResponseEntity<ErrorResponse> handleUserTooOldException(UserTooOldException ex) {
+        ErrorResponse response = new ErrorResponse(
+                "INVALID_USER_AGE",
+                ex.getMessage(),
+                HttpStatus.CONFLICT.value(),
+                LocalDateTime.now()
+        );
+
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+    }
+
     @ExceptionHandler(FlightNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleFlightNotFoundException(FlightNotFoundException ex) {
         ErrorResponse response = new ErrorResponse(
