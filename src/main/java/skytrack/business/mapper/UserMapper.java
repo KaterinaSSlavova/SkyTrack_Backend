@@ -17,6 +17,7 @@ public class UserMapper {
                 .lastName(user.getLastName())
                 .email(user.getEmail())
                 .age(Period.between(user.getBirthdate(), LocalDate.now()).getYears())
+                .birthDate(user.getBirthdate())
                 .role(user.getRole().getRoleName().name())
                 .build();
     }
