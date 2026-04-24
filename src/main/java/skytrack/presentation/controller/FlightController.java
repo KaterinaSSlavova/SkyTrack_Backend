@@ -2,11 +2,15 @@ package skytrack.presentation.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityReturnValueHandler;
+import reactor.core.publisher.Mono;
 import skytrack.business.useCase.flight.*;
+import skytrack.dto.duffel.DuffelFlightResponse;
 import skytrack.dto.flight.CreateFlightRequest;
 import skytrack.dto.flight.FlightResponse;
 import skytrack.dto.flight.GetAllFlightsResponse;
@@ -25,6 +29,7 @@ public class FlightController {
     private final UpdateFlightUseCase updateFlightUseCase;
     private final CancelFlightUseCase cancelFlightUseCase;
     private final SearchFlightUseCase searchFlightUseCase;
+    private final SearchDuffelFlightUseCase searchDuffelFlightUseCase;
 
     @PreAuthorize("hasAnyRole('PASSENGER', 'ADMIN')")
     @GetMapping
@@ -66,5 +71,13 @@ public class FlightController {
             (@RequestParam String departureIata, @RequestParam String arrivalIata, @RequestParam LocalDate departureDate){
         List<FlightResponse> response = searchFlightUseCase.searchFlights(departureIata, arrivalIata, departureDate);
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/duffel/search")
+    public Mono<List<DuffelFlightResponse>> duffelSearchFlights
+            (@RequestParam String departureIata,
+             @RequestParam String arrivalIata,
+             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate departureDate){
+        return searchDuffelFlightUseCase.searchFlights(departureIata, arrivalIata, departureDate);
     }
 }

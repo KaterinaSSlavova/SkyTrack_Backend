@@ -34,7 +34,9 @@ package:
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
   script:
-    - docker build -t skytrack-backend:latest .
+    - docker login -u $DOCKER_HUB_USERNAME -p $DOCKER_HUB_TOKEN
+    - docker build -t $DOCKER_HUB_USERNAME/skytrack:latest .
+    - docker push $DOCKER_HUB_USERNAME/skytrack:latest
 
 trigger_deploy:
   stage: trigger_deploy
