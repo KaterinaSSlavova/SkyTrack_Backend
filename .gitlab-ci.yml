@@ -35,8 +35,9 @@ package:
     - if: '$CI_COMMIT_BRANCH == "main"'
   script:
     - docker login -u $DOCKER_HUB_USERNAME -p $DOCKER_HUB_TOKEN
-    - docker build -t $DOCKER_HUB_USERNAME/skytrack:latest .
+    - docker build -t $DOCKER_HUB_USERNAME/skytrack:latest -t $DOCKER_HUB_USERNAME/skytrack:$CI_COMMIT_SHORT_SHA .
     - docker push $DOCKER_HUB_USERNAME/skytrack:latest
+    - docker push $DOCKER_HUB_USERNAME/skytrack:$CI_COMMIT_SHORT_SHA
 
 trigger_deploy:
   stage: trigger_deploy
