@@ -23,6 +23,7 @@ public class SecurityConfig {
                 .cors(Customizer.withDefaults())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/auth/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/flights/duffel/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/airports/search").hasRole("PASSENGER")
                         .requestMatchers(HttpMethod.GET, "/flights/search").hasRole("PASSENGER")
                         .requestMatchers(HttpMethod.GET, "/airports/{id}").hasAnyRole("PASSENGER", "ADMIN")
