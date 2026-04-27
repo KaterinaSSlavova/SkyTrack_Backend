@@ -15,11 +15,12 @@ import java.util.List;
 @RequiredArgsConstructor
 public class GetAllAirportsUseCaseImpl implements GetAllAirportsUseCase {
     private final AirportRepository airportRepository;
+    private final AirportMapper airportMapper;
 
     @Override
     public GetAllAirports getAllAirports() {
         List<AirportEntity> airports = airportRepository.findByIsArchivedFalse();
-        List<AirportResponse> response = airports.stream().map(AirportMapper::toResponse).toList();
+        List<AirportResponse> response = airports.stream().map(airportMapper::toResponse).toList();
         return new GetAllAirports(response);
     }
 }

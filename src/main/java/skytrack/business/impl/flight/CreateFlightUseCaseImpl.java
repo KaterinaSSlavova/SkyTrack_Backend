@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import skytrack.business.exception.airport.AirportNotFoundException;
 import skytrack.business.exception.flight.FlightStatusNotFoundException;
-import skytrack.business.mapper.FlightMapper;
+import skytrack.business.mapper.InternalFlightMapper;
 import skytrack.business.service.FlightValidationService;
 import skytrack.business.service.TimeConverter;
 import skytrack.business.useCase.flight.CreateFlightUseCase;
@@ -35,10 +35,10 @@ public class CreateFlightUseCaseImpl implements CreateFlightUseCase {
         FlightStatusEntity status = validateFlightStatus(request.getStatusId());
         Instant depTime = timeConverter.convertToUTC(request.getDepartureLocalTime(), depAirport.getTimezone());
         Instant arrTime = timeConverter.convertToUTC(request.getArrivalLocalTime(), arrAirport.getTimezone());
-        FlightEntity flight = FlightMapper.toEntity(request,depAirport,arrAirport,depTime, arrTime, status);
+        FlightEntity flight = InternalFlightMapper.toEntity(request,depAirport,arrAirport,depTime, arrTime, status);
         flightValidationService.validateFlight(flight);
         FlightEntity savedFlight = flightRepository.save(flight);
-        return FlightMapper.toResponse(savedFlight,
+        return InternalFlightMapper.toResponse(savedFlight,
                 timeConverter.convertToLocalTime
                         (savedFlight.getDepartureTimeUTC(),savedFlight.getDepartureAirport().getTimezone()),
                 timeConverter.convertToLocalTime

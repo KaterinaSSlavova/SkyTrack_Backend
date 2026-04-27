@@ -4,8 +4,11 @@ import skytrack.dto.duffel.DuffelFlightResponse;
 import skytrack.dto.duffel.response.DuffelAirport;
 import skytrack.dto.duffel.response.DuffelOffer;
 import skytrack.dto.duffel.response.DuffelSegment;
+import skytrack.persistence.entity.AirportEntity;
+import skytrack.persistence.entity.DuffelFlightEntity;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDateTime;
 
 public class DuffelFlightMapper {

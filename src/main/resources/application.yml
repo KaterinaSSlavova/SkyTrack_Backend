@@ -15,6 +15,10 @@ sentry:
   dsn: https://3c587baa3f7b670fa78794a0d924b298@o4511095744954368.ingest.de.sentry.io/4511095771824208
   traces-sample-rate: 1.0
 
+logging:
+  level:
+    skytrack: INFO
+
 jwt:
   secret: ${JWT_SECRET}
   expiration-ms: 86400000
@@ -22,3 +26,9 @@ jwt:
 duffel:
   api:
     key: ${DUFFEL_API_KEY}
+
+frankfurter:
+  base_url: ${FRANKFURT_URL}
+
+app:
+  base-url: ${BASE_URL}

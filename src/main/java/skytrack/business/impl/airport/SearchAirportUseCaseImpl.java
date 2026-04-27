@@ -14,10 +14,11 @@ import java.util.List;
 @AllArgsConstructor
 public class SearchAirportUseCaseImpl implements SearchAirportUseCase {
     private AirportRepository airportRepository;
+    private final AirportMapper airportMapper;
 
     @Override
     public List<AirportResponse> searchAirport(String input) {
         List<AirportEntity> airports = airportRepository.searchAirports(input);
-        return airports.stream().map(AirportMapper::toResponse).toList();
+        return airports.stream().map(airportMapper::toResponse).toList();
     }
 }

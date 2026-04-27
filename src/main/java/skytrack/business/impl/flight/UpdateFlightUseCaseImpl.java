@@ -5,7 +5,7 @@ import org.springframework.stereotype.Service;
 import skytrack.business.exception.airport.AirportNotFoundException;
 import skytrack.business.exception.flight.FlightNotFoundException;
 import skytrack.business.exception.flight.FlightStatusNotFoundException;
-import skytrack.business.mapper.FlightMapper;
+import skytrack.business.mapper.InternalFlightMapper;
 import skytrack.business.service.FlightValidationService;
 import skytrack.business.service.TimeConverter;
 import skytrack.business.useCase.flight.UpdateFlightUseCase;
@@ -48,7 +48,7 @@ public class UpdateFlightUseCaseImpl implements UpdateFlightUseCase {
        FlightStatusEntity status = request.getStatusId() !=null ?
                findFlightStatus(request.getStatusId()) : existingFlight.getStatus();
 
-       FlightMapper.updateEntity(existingFlight, request, depAirport, arrAirport, depTimeUTC, arrTimeUTC, status);
+       InternalFlightMapper.updateEntity(existingFlight, request, depAirport, arrAirport, depTimeUTC, arrTimeUTC, status);
        flightValidationService.validateFlight(existingFlight);
        flightRepository.save(existingFlight);
     }

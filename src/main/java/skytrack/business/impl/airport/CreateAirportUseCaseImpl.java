@@ -16,14 +16,15 @@ import skytrack.persistence.repo.AirportRepository;
 public class CreateAirportUseCaseImpl implements CreateAirportUseCase {
     private final AirportRepository airportRepository;
     private final AirportValidationService  airportValidationService;
+    private final AirportMapper airportMapper;
 
     @Override
     public AirportResponse createAirport(CreateAirportRequest request) {
         if(airportRepository.existsByIataCode(request.getIataCode())){
             throw new AirportAlreadyExistsException(request.getIataCode());
         }
-        AirportEntity airport = AirportMapper.toEntity(request);
+        AirportEntity airport = airportMapper.toEntity(request);
         airportValidationService.validateAirport(airport);
-        return AirportMapper.toResponse(airportRepository.save(airport));
+        return airportMapper.toResponse(airportRepository.save(airport));
     }
 }

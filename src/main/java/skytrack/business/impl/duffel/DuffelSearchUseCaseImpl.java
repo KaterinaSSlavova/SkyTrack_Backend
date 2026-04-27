@@ -1,4 +1,4 @@
-package skytrack.business.impl.flight;
+package skytrack.business.impl.duffel;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;

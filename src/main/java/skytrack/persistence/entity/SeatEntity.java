@@ -1,10 +1,12 @@
 package skytrack.persistence.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Entity
+@Getter
+@Setter
+@Builder
 @AllArgsConstructor
 @NoArgsConstructor
 @Table(name="seat")
@@ -12,10 +14,11 @@ public class SeatEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Setter(AccessLevel.NONE)
     private Long id;
 
     @Column(name="seat_number")
-    private Long seatNumber;
+    private String seatNumber;
 
     @Column(name="is_window")
     private Boolean window;
