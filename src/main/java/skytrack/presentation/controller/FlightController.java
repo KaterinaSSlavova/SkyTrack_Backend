@@ -11,6 +11,7 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityRetur
 import reactor.core.publisher.Mono;
 import skytrack.business.useCase.flight.*;
 import skytrack.dto.duffel.DuffelFlightResponse;
+import skytrack.dto.duffel.SavedFlightResponse;
 import skytrack.dto.flight.CreateFlightRequest;
 import skytrack.dto.flight.FlightResponse;
 import skytrack.dto.flight.GetAllFlightsResponse;
@@ -30,6 +31,7 @@ public class FlightController {
     private final CancelFlightUseCase cancelFlightUseCase;
     private final SearchFlightUseCase searchFlightUseCase;
     private final SearchDuffelFlightUseCase searchDuffelFlightUseCase;
+    private final SaveDuffelUseCase saveDuffelUseCase;
 
     @PreAuthorize("hasAnyRole('PASSENGER', 'ADMIN')")
     @GetMapping
@@ -73,11 +75,19 @@ public class FlightController {
         return ResponseEntity.ok(response);
     }
 
+    @PreAuthorize("hasRole('PASSENGER')")
     @GetMapping("/duffel/search")
-    public Mono<List<DuffelFlightResponse>> duffelSearchFlights
+    public List<DuffelFlightResponse> duffelSearchFlights
             (@RequestParam String departureIata,
              @RequestParam String arrivalIata,
              @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate departureDate){
-        return searchDuffelFlightUseCase.searchFlights(departureIata, arrivalIata, departureDate);
+        return searchDuffelFlightUseCase.searchFlights(departureIata, arrivalIata, departureDate).block();
+    }
+
+    @PreAuthorize("hasRole('PASSENGER')")
+    @PostMapping("/duffel/save")
+    public ResponseEntity<SavedFlightResponse> createFlight(@RequestBody @Valid DuffelFlightResponse response){
+         SavedFlightResponse flightResponse = saveDuffelUseCase.saveFlight(response);
+         return ResponseEntity.status(HttpStatus.CREATED).body(flightResponse);
     }
 }

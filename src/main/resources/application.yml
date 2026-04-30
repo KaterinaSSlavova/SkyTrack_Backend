@@ -3,6 +3,9 @@ spring:
     url: ${Db_url}
     username: ${Db_username}
     password: ${Db_password}
+    hikari:
+      maximum-pool-size: 3
+      minimum-idle: 1
 
   jpa:
     hibernate:

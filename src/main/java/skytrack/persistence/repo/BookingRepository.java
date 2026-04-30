@@ -6,6 +6,6 @@ import skytrack.persistence.entity.BookingEntity;
 import java.util.List;
 
 public interface BookingRepository extends JpaRepository<BookingEntity, Long> {
-    boolean existsByExternalFlightIdAndSeatId(Long externalFlightId, Long seatId);
-    List<BookingEntity> findByExternalFlightId(Long flightId);
+    boolean existsByExternalFlight_IdAndSeat_Id(Long flightId, Long seatId);
+    List<BookingEntity> findByExternalFlight_Id(Long flightId);
 }

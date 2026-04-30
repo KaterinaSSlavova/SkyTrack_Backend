@@ -16,6 +16,7 @@ import skytrack.dto.duffel.response.DuffelOfferResponse;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -26,6 +27,7 @@ public class DuffelSearchUseCaseImpl implements SearchDuffelFlightUseCase {
     @Override
     public Mono<List<DuffelFlightResponse>> searchFlights(String departureIata, String arrivalIata, LocalDate departureDate) {
         DuffelOfferRequest request = buildRequest(departureIata, arrivalIata, departureDate);
+
         return duffelClient.post().uri("/air/offer_requests?return_offers=true")
                 .bodyValue(request)
                 .retrieve()
@@ -40,6 +42,12 @@ public class DuffelSearchUseCaseImpl implements SearchDuffelFlightUseCase {
                 })
                 .map(response -> response.getData().getOffers().stream()
                         .map(DuffelFlightMapper::toResponse)
+                        .filter(f -> f.getFlightNumber() != null && !f.getExternalId().isBlank())
+                        .collect(Collectors.toMap(
+                                f -> f.getFlightNumber() + "_" + f.getDepartureLocalTime() + "_" + f.getArrivalIataCode(),
+                                f -> f,
+                                (a, b) -> a.getPrice().compareTo(b.getPrice()) <= 0 ? a : b
+                        )).values().stream()
                         .toList());
     }
 

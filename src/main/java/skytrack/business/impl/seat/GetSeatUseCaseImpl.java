@@ -26,7 +26,7 @@ public class GetSeatUseCaseImpl implements GetSeatUseCase {
         if(!duffelRepository.existsById(flightId)){
             throw new FlightNotFoundException(flightId);
         }
-        boolean isAvailable = !bookingRepository.existsByExternalFlightIdAndSeatId(flightId, seatId);
+        boolean isAvailable = !bookingRepository.existsByExternalFlight_IdAndSeat_Id(flightId, seatId);
         return seatMapper.toResponse(seat, isAvailable);
     }
 }

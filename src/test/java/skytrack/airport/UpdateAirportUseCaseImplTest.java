@@ -7,6 +7,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import skytrack.business.exception.airport.AirportNotFoundException;
 import skytrack.business.impl.airport.UpdateAirportUseCaseImpl;
+import skytrack.business.mapper.AirportMapper;
 import skytrack.business.service.AirportValidationService;
 import skytrack.dto.airport.UpdateAirportRequest;
 import skytrack.persistence.entity.AirportEntity;
@@ -24,14 +25,19 @@ public class UpdateAirportUseCaseImplTest {
     @Mock
     private AirportValidationService airportValidationService;
 
+    @Mock
+    private AirportMapper airportMapper;
+
     @InjectMocks
     private UpdateAirportUseCaseImpl updateAirportUseCaseImpl;
 
     @Test
     public void updateAirport_shouldUpdateAirport_whenAirportExists() {
         //arrange
-        UpdateAirportRequest request = new UpdateAirportRequest(1L, "AMS", "Schiphol", "Amsterdam", "Netherlands", "Europe/Amsterdam");;
+        UpdateAirportRequest request = new UpdateAirportRequest(1L, "AMS", "Schiphol", "Amsterdam", "Netherlands", "Europe/Amsterdam");
+        AirportEntity entity = new AirportEntity(1L, "AMS", "Schiphol", "Amsterdam", "Netherlands", "Europe/Amsterdam", false);
         when(airportRepository.existsById(request.getId())).thenReturn(true);
+        when(airportMapper.toEntity(request)).thenReturn(entity);
 
         //act
         updateAirportUseCaseImpl.updateAirport(request);

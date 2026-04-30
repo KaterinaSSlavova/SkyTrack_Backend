@@ -4,10 +4,7 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import skytrack.dto.booking.BookingResponse;
 import skytrack.dto.booking.CreateBookingRequest;
-import skytrack.persistence.entity.BookingEntity;
-import skytrack.persistence.entity.DuffelFlightEntity;
-import skytrack.persistence.entity.SeatEntity;
-import skytrack.persistence.entity.UserEntity;
+import skytrack.persistence.entity.*;
 
 import java.math.BigDecimal;
 
@@ -19,7 +16,10 @@ public interface BookingMapper {
     @Mapping(target="basePrice", source="flight.price")
     @Mapping(target="externalFlight", source = "flight")
     @Mapping(target="bookingReference", source = "bookingReference")
-    BookingEntity toEntity(CreateBookingRequest request, UserEntity user, DuffelFlightEntity flight, SeatEntity seat, BigDecimal totalPrice, String bookingReference);
+    @Mapping(target="passenger", source = "passenger")
+    @Mapping(target="archived", ignore = true)
+    BookingEntity toEntity(CreateBookingRequest request, UserEntity user, DuffelFlightEntity flight, PassengerEntity passenger, SeatEntity seat, BigDecimal totalPrice, String bookingReference);
 
+    @Mapping(target="flight", source="externalFlight")
     BookingResponse toResponse(BookingEntity entity);
 }

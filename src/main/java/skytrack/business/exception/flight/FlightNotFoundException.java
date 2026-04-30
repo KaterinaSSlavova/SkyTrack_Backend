@@ -4,4 +4,8 @@ public class FlightNotFoundException extends RuntimeException {
     public FlightNotFoundException(Long id) {
       super("Flight with id "+ id + " not found!");
     }
+
+    public FlightNotFoundException(String externalId) {
+        super("Flight with id "+ externalId + " not found!");
+    }
 }

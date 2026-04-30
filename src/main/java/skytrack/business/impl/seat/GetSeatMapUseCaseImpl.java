@@ -29,7 +29,7 @@ public class GetSeatMapUseCaseImpl implements GetSeatMapUseCase {
             throw new FlightNotFoundException(flightId);
         }
 
-        Set<Long> bookedSeatIds = bookingRepository.findByExternalFlightId(flightId)
+        Set<Long> bookedSeatIds = bookingRepository.findByExternalFlight_Id(flightId)
                 .stream()
                 .map(b -> b.getSeat().getId())
                 .collect(Collectors.toSet());
