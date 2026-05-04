@@ -35,3 +35,5 @@ frankfurter:
 
 app:
   base-url: ${BASE_URL}
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS}
