@@ -36,4 +36,4 @@ frankfurter:
 app:
   base-url: ${BASE_URL}
   cors:
-    allowed-origins: ${ALLOWED_ORIGINS}
+    allowed-origins: http://localhost:3000
