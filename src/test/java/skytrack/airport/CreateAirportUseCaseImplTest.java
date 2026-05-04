@@ -7,6 +7,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import skytrack.business.exception.airport.AirportAlreadyExistsException;
 import skytrack.business.impl.airport.CreateAirportUseCaseImpl;
+import skytrack.business.mapper.AirportMapper;
 import skytrack.business.service.AirportValidationService;
 import skytrack.dto.airport.AirportResponse;
 import skytrack.dto.airport.CreateAirportRequest;
@@ -25,15 +26,21 @@ public class CreateAirportUseCaseImplTest {
     @Mock
     private AirportValidationService airportValidationService;
 
+    @Mock
+    private AirportMapper airportMapper;
+
     @InjectMocks
     private CreateAirportUseCaseImpl createAirportUseCaseImpl;
 
     @Test
-    public void createFlight_shouldReturnAirportResponse_whenRequestIsNotNull() {
+    public void createAirport_shouldReturnAirportResponse_whenRequestIsNotNull() {
         //arrange
         AirportEntity airport = new AirportEntity(1L, "AMS", "Schiphol", "Amsterdam", "Netherlands", "Europe/Amsterdam", false);
+        AirportResponse expectedAirport = new AirportResponse(1L, "AMS", "Schiphol", "Amsterdam", "Netherlands", "Europe/Amsterdam");
         CreateAirportRequest request = new CreateAirportRequest("AMS", "Schiphol", "Amsterdam", "Netherlands", "Europe/Amsterdam");
         when(airportRepository.existsByIataCode(request.getIataCode())).thenReturn(false);
+        when(airportMapper.toEntity(request)).thenReturn(airport);
+        when(airportMapper.toResponse(airport)).thenReturn(expectedAirport);
         when(airportRepository.save(any(AirportEntity.class))).thenReturn(airport);
 
         //act
@@ -46,10 +53,11 @@ public class CreateAirportUseCaseImplTest {
         assertEquals(airport.getCity(), response.getCity());
         assertEquals(airport.getCountry(), response.getCountry());
         assertEquals(airport.getTimezone(), response.getTimezone());
+        verify(airportValidationService).validateAirport(airport);
     }
 
     @Test
-    public void createFlight_shouldThrowAirportAlreadyExistsException_whenIataCodeExists() {
+    public void createAirport_shouldThrowAirportAlreadyExistsException_whenIataCodeExists() {
         //arrange
         CreateAirportRequest request = new CreateAirportRequest("AMS", "Schiphol", "Amsterdam", "Netherlands", "Europe/Amsterdam");
         when(airportRepository.existsByIataCode(any(String.class))).thenReturn(true);

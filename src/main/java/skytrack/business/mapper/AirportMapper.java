@@ -1,40 +1,16 @@
 package skytrack.business.mapper;
 
+import org.mapstruct.Mapper;
 import skytrack.dto.airport.AirportResponse;
 import skytrack.dto.airport.CreateAirportRequest;
 import skytrack.dto.airport.UpdateAirportRequest;
 import skytrack.persistence.entity.AirportEntity;
 
-public class AirportMapper {
-    public static AirportEntity toEntity(CreateAirportRequest request){
-        return AirportEntity.builder()
-                .iataCode(request.getIataCode())
-                .name(request.getName())
-                .city(request.getCity())
-                .country(request.getCountry())
-                .timezone(request.getTimezone())
-                .build();
-    }
+@Mapper(componentModel = "spring")
+public interface AirportMapper {
+    AirportEntity toEntity(CreateAirportRequest request);
 
-    public static AirportResponse toResponse(AirportEntity airport){
-        return AirportResponse.builder()
-                .id(airport.getId())
-                .iataCode(airport.getIataCode())
-                .name(airport.getName())
-                .city(airport.getCity())
-                .country(airport.getCountry())
-                .timezone(airport.getTimezone())
-                .build();
-    }
+    AirportResponse toResponse(AirportEntity airport);
 
-    public static AirportEntity toEntity(UpdateAirportRequest request){
-        return AirportEntity.builder()
-                .id(request.getId())
-                .iataCode(request.getIataCode())
-                .name(request.getName())
-                .city(request.getCity())
-                .country(request.getCountry())
-                .timezone(request.getTimezone())
-                .build();
-    }
+    AirportEntity toEntity(UpdateAirportRequest request);
 }

@@ -7,6 +7,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import skytrack.business.exception.airport.AirportNotFoundException;
 import skytrack.business.impl.airport.GetAirportUseCaseImpl;
+import skytrack.business.mapper.AirportMapper;
 import skytrack.dto.airport.AirportResponse;
 import skytrack.persistence.entity.AirportEntity;
 import skytrack.persistence.repo.AirportRepository;
@@ -21,6 +22,9 @@ public class GetAirportUseCaseImplTest {
     @Mock
     private AirportRepository airportRepository;
 
+    @Mock
+    private AirportMapper airportMapper;
+
     @InjectMocks
     private GetAirportUseCaseImpl getAirportUseCaseImpl;
 
@@ -28,7 +32,9 @@ public class GetAirportUseCaseImplTest {
     void getAirportById_shouldReturnAirport_whenAirportExists() {
         //arrange
         AirportEntity airport = new AirportEntity(1L, "AMS", "Schiphol", "Amsterdam", "Netherlands", "Europe/Amsterdam", false);
+        AirportResponse expectedResponse = new AirportResponse(1L, "AMS", "Schiphol", "Amsterdam", "Netherlands", "Europe/Amsterdam");
         when(airportRepository.findByIdAndIsArchivedFalse(airport.getId())).thenReturn(Optional.of(airport));
+        when(airportMapper.toResponse(airport)).thenReturn(expectedResponse);
 
         //act
         AirportResponse response = getAirportUseCaseImpl.getAirportById(airport.getId());

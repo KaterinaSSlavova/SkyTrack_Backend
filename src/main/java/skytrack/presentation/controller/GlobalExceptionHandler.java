@@ -63,11 +63,11 @@ public class GlobalExceptionHandler {
         ErrorResponse response = new ErrorResponse(
                 "INVALID_EMAIL",
                 ex.getMessage(),
-                HttpStatus.BAD_REQUEST.value(),
+                HttpStatus.UNAUTHORIZED.value(),
                 LocalDateTime.now()
         );
 
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
     }
 
     @ExceptionHandler(UserPasswordInvalidException.class)
@@ -75,11 +75,11 @@ public class GlobalExceptionHandler {
         ErrorResponse response = new ErrorResponse(
                 "INVALID_PASSWORD",
                 ex.getMessage(),
-                HttpStatus.BAD_REQUEST.value(),
+                HttpStatus.UNAUTHORIZED.value(),
                 LocalDateTime.now()
         );
 
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
     }
 
     @ExceptionHandler(UserTooYoungException.class)

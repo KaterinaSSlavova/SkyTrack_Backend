@@ -3,7 +3,7 @@ package skytrack.business.impl.flight;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import skytrack.business.exception.airport.AirportNotFoundException;
-import skytrack.business.mapper.FlightMapper;
+import skytrack.business.mapper.InternalFlightMapper;
 import skytrack.business.service.TimeConverter;
 import skytrack.business.useCase.flight.SearchFlightUseCase;
 import skytrack.dto.flight.FlightResponse;
@@ -41,7 +41,7 @@ public class SearchFlightUseCaseImpl implements SearchFlightUseCase {
     }
 
     private FlightResponse convertFlightToResponse(FlightEntity flight) {
-        return FlightMapper.toResponse(flight,
+        return InternalFlightMapper.toResponse(flight,
                 timeConverter.convertToLocalTime
                         (flight.getDepartureTimeUTC(), flight.getDepartureAirport().getTimezone()),
                 timeConverter.convertToLocalTime

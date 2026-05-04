@@ -11,8 +11,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class SeatResponse {
     private Long id;
-    private Long seatNumber;
+    private String seatNumber;
     private Boolean window;
     private Boolean aisle;
     private Boolean extraLegroom;
+    private Boolean available;
 }

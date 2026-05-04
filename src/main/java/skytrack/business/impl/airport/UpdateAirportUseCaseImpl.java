@@ -15,11 +15,12 @@ import skytrack.persistence.repo.AirportRepository;
 public class UpdateAirportUseCaseImpl implements UpdateAirportUseCase {
     private final AirportRepository airportRepository;
     private final AirportValidationService airportValidationService;
+    private final AirportMapper airportMapper;
 
     @Override
     public void updateAirport(UpdateAirportRequest request) {
         validateAirportExists(request.getId());
-        AirportEntity updatedAirport = AirportMapper.toEntity(request);
+        AirportEntity updatedAirport = airportMapper.toEntity(request);
         airportValidationService.validateAirport(updatedAirport);
         airportRepository.save(updatedAirport);
     }

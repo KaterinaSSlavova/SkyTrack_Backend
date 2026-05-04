@@ -13,11 +13,12 @@ import skytrack.persistence.repo.AirportRepository;
 @RequiredArgsConstructor
 public class GetAirportUseCaseImpl implements GetAirportUseCase {
     private final AirportRepository airportRepository;
+    private final AirportMapper airportMapper;
 
     @Override
     public AirportResponse getAirportById(Long id) {
         AirportEntity airport = airportRepository.findByIdAndIsArchivedFalse(id)
                 .orElseThrow(() -> new AirportNotFoundException(id));
-        return AirportMapper.toResponse(airport);
+        return airportMapper.toResponse(airport);
     }
 }
