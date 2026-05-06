@@ -2,6 +2,7 @@ package skytrack.business.service;
 
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.common.BitMatrix;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import com.google.zxing.qrcode.QRCodeWriter;
@@ -14,14 +15,16 @@ import java.io.IOException;
 
 
 @Service
+@RequiredArgsConstructor
 public class QrGenerator {
     @Value("${app.base-url}")
     private String baseUrl;
 
+    private final QRCodeWriter qrCodeWriter;
+
     public byte[] generate(String bookingReference){
         try{
             String qrContent = baseUrl + "/bookings/" + bookingReference;
-            QRCodeWriter qrCodeWriter = new QRCodeWriter();
             BitMatrix bitMatrix = qrCodeWriter.encode(qrContent, BarcodeFormat.QR_CODE, 250, 250);
 
             ByteArrayOutputStream output = new ByteArrayOutputStream();

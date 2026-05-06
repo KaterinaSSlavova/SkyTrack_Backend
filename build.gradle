@@ -30,6 +30,15 @@ jacoco {
 tasks.named('test') {
     useJUnitPlatform()
     finalizedBy jacocoTestReport
+
+    systemProperty 'Db_url', project.findProperty('Db_url') ?: System.getenv('Db_url')
+    systemProperty 'Db_username', project.findProperty('Db_username') ?: System.getenv('Db_username')
+    systemProperty 'Db_password', project.findProperty('Db_password') ?: System.getenv('Db_password')
+    systemProperty 'JWT_SECRET', project.findProperty('JWT_SECRET') ?: System.getenv('JWT_SECRET')
+    systemProperty 'DUFFEL_API_KEY', project.findProperty('DUFFEL_API_KEY') ?: System.getenv('DUFFEL_API_KEY')
+    systemProperty 'FRANKFURT_URL', project.findProperty('FRANKFURT_URL') ?: System.getenv('FRANKFURT_URL')
+    systemProperty 'BASE_URL', project.findProperty('BASE_URL') ?: System.getenv('BASE_URL')
+    systemProperty 'ALLOWED_ORIGINS', project.findProperty('ALLOWED_ORIGINS') ?: System.getenv('ALLOWED_ORIGINS')
 }
 
 jacocoTestReport {
@@ -73,13 +82,10 @@ dependencies {
     compileOnly 'org.projectlombok:lombok'
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
     annotationProcessor 'org.projectlombok:lombok'
+    testImplementation 'io.projectreactor:reactor-test'
     testImplementation 'org.springframework.boot:spring-boot-starter-validation-test'
     testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.boot:spring-boot-starter-flyway-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-}
-
-tasks.named('test') {
-    useJUnitPlatform()
 }

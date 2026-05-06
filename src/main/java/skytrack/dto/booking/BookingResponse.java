@@ -22,4 +22,6 @@ public class BookingResponse {
     private BigDecimal totalPrice;
     private String currency;
     private String bookingReference;
+    private boolean archived;
+    private BookingStatus status;
 }
