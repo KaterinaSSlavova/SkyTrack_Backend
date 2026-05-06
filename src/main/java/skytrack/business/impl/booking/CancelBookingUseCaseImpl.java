@@ -16,7 +16,7 @@ public class CancelBookingUseCaseImpl implements CancelBookingUseCase {
     public void cancelBooking(Long id) {
         BookingEntity entity = bookingRepository.findById(id)
                 .orElseThrow(() -> new BookingNotFoundException(id));
-        entity.setArchived(false);
+        entity.setArchived(true);
         bookingRepository.save(entity);
     }
 }
