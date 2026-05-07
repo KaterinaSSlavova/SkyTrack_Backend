@@ -7,10 +7,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import skytrack.business.service.QrGenerator;
-import skytrack.business.useCase.booking.CancelBookingUseCase;
-import skytrack.business.useCase.booking.CreateBookingUseCase;
-import skytrack.business.useCase.booking.GetAllBookingsUseCase;
-import skytrack.business.useCase.booking.GetBookingUseCase;
+import skytrack.business.useCase.booking.*;
 import skytrack.dto.booking.BookingResponse;
 import skytrack.dto.booking.CreateBookingRequest;
 
@@ -25,11 +22,18 @@ public class BookingController {
     private final GetAllBookingsUseCase getAllBookingsUseCase;
     private final GetBookingUseCase getBookingUseCase;
     private final CancelBookingUseCase cancelBookingUseCase;
+    private final GetBookingByReferenceUseCase getBookingByReferenceUseCase;
 
     @GetMapping("{reference}/qr")
     public ResponseEntity<byte[]> getQRCode(@PathVariable("reference") final String reference) {
         byte[] qrBytes = qrGenerator.generate(reference);
         return ResponseEntity.ok().contentType(MediaType.IMAGE_PNG).body(qrBytes);
+    }
+
+    @GetMapping("verify/{reference}")
+    public ResponseEntity<BookingResponse> verifyBooking(@PathVariable String reference) {
+        BookingResponse response = getBookingByReferenceUseCase.getBookingByReference(reference);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping
