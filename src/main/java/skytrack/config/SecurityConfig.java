@@ -40,6 +40,7 @@ public class SecurityConfig {
                 }))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/auth/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/bookings/verify/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/seats/{id}").hasRole("PASSENGER")
                         .requestMatchers(HttpMethod.GET, "/seats/{seatId}/flight/{flightId}").hasRole("PASSENGER")
                         .requestMatchers(HttpMethod.GET, "/bookings").hasAnyRole("PASSENGER", "ADMIN")

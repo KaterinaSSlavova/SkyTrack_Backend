@@ -13,7 +13,6 @@ import skytrack.business.exception.booking.QrCodeGenerationException;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
-
 @Service
 @RequiredArgsConstructor
 public class QrGenerator {
@@ -24,7 +23,7 @@ public class QrGenerator {
 
     public byte[] generate(String bookingReference){
         try{
-            String qrContent = baseUrl + "/bookings/" + bookingReference;
+            String qrContent = baseUrl + "/boarding-pass/" + bookingReference;
             BitMatrix bitMatrix = qrCodeWriter.encode(qrContent, BarcodeFormat.QR_CODE, 250, 250);
 
             ByteArrayOutputStream output = new ByteArrayOutputStream();
