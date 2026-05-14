@@ -19,14 +19,4 @@ public class TimeConverter {
         ZoneId zone = ZoneId.of(timezone);
         return LocalDateTime.ofInstant(timeUTC, zone);
     }
-
-    public Instant getStartOfDayUTC(LocalDate date, String timezone){
-        ZoneId zone = ZoneId.of(timezone);
-        return date.atStartOfDay(zone).toInstant();
-    }
-
-    public Instant getEndOfDayUTC(LocalDate date, String timezone){
-        ZoneId zone = ZoneId.of(timezone);
-        return date.plusDays(1).atStartOfDay(zone).toInstant();
-    }
 }

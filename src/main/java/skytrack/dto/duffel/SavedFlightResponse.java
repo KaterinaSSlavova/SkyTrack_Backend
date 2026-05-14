@@ -3,6 +3,7 @@ package skytrack.dto.duffel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import skytrack.dto.airport.AirportResponse;
+import skytrack.persistence.enumeration.FlightStatus;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -21,6 +22,8 @@ public class SavedFlightResponse {
     private String arrivalTimezone;
     private BigDecimal price;
     private String currency;
+    private String gate;
+    private FlightStatus status;
     private AirportResponse departureAirport;
     private AirportResponse arrivalAirport;
 }

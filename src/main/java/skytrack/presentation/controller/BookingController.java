@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import skytrack.business.service.QrGenerator;
 import skytrack.business.useCase.booking.*;
@@ -24,6 +25,7 @@ public class BookingController {
     private final CancelBookingUseCase cancelBookingUseCase;
     private final GetBookingByReferenceUseCase getBookingByReferenceUseCase;
 
+    @PreAuthorize("hasAnyRole('PASSENGER', 'ADMIN')")
     @GetMapping("{reference}/qr")
     public ResponseEntity<byte[]> getQRCode(@PathVariable("reference") final String reference) {
         byte[] qrBytes = qrGenerator.generate(reference);
@@ -36,24 +38,28 @@ public class BookingController {
         return ResponseEntity.ok(response);
     }
 
+    @PreAuthorize("hasAnyRole('PASSENGER', 'ADMIN')")
     @GetMapping
     public ResponseEntity<List<BookingResponse>> getAllBookings() {
         List<BookingResponse> response = getAllBookingsUseCase.getAllBookings();
         return ResponseEntity.ok().body(response);
     }
 
+    @PreAuthorize("hasAnyRole('PASSENGER', 'ADMIN')")
     @GetMapping("{id}")
     public ResponseEntity<BookingResponse> getBooking(@PathVariable("id") final Long id) {
         BookingResponse response = getBookingUseCase.getBooking(id);
         return ResponseEntity.ok().body(response);
     }
 
+    @PreAuthorize("hasRole('PASSENGER')")
     @PostMapping
     public ResponseEntity<BookingResponse> createBooking(@RequestBody @Valid CreateBookingRequest request){
         BookingResponse response = createBookingUseCase.toResponse(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
+    @PreAuthorize("hasRole('PASSENGER')")
     @PatchMapping("{id}/cancel")
     public ResponseEntity<BookingResponse> cancelBooking(@PathVariable("id") final Long id) {
         cancelBookingUseCase.cancelBooking(id);
