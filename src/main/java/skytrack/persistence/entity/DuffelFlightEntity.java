@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
+import skytrack.persistence.enumeration.FlightStatus;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -49,6 +50,10 @@ public class DuffelFlightEntity {
     private String arrivalTimezone;
     private BigDecimal price;
     private String currency;
+    private String gate;
+
+    @Enumerated(EnumType.STRING)
+    private FlightStatus status;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="departure_airport_id")
