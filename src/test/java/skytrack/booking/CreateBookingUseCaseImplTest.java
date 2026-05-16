@@ -148,4 +148,38 @@ public class CreateBookingUseCaseImplTest {
         verify(extrasRepository).findByName("extra_legroom");
         assertNotNull(result);
     }
+
+    @Test
+    void createBooking_shouldAddWindowPrice_whenWindowSeatOnly() {
+        // arrange
+        SeatEntity seat = new SeatEntity(1L, "A2", true, false, false);
+        DuffelFlightEntity flight = new DuffelFlightEntity();
+        flight.setPrice(new BigDecimal("100"));
+
+        ExtrasEntity windowExtra = new ExtrasEntity();
+        windowExtra.setPrice(new BigDecimal("15.00"));
+
+        BookingEntity bookingEntity = new BookingEntity();
+        BookingResponse expectedResponse = new BookingResponse();
+
+        when(userService.getLoggedUser()).thenReturn(new UserEntity());
+        when(timeConverter.convertToUTC(any(), any())).thenReturn(Instant.now());
+        when(duffelRepository.findByFlightNumberAndDepartureTime(any(), any())).thenReturn(Optional.of(flight));
+        when(seatRepository.findById(any())).thenReturn(Optional.of(seat));
+        when(bookingRepository.existsByExternalFlight_IdAndSeat_Id(any(), any())).thenReturn(false);
+        when(extrasRepository.findByName("window")).thenReturn(windowExtra);
+        when(referenceGenerator.generate()).thenReturn("SKY-ABC123");
+        when(passengerMapper.toEntity(any())).thenReturn(new PassengerEntity());
+        when(passengerRepository.save(any())).thenReturn(new PassengerEntity());
+        when(bookingMapper.toEntity(any(), any(), any(), any(), any(), any(), any())).thenReturn(bookingEntity);
+        when(bookingRepository.save(any())).thenReturn(bookingEntity);
+        when(bookingMapper.toResponse(any())).thenReturn(expectedResponse);
+
+        // act
+        BookingResponse result = createBooking.toResponse(buildRequest());
+
+        // assert
+        verify(extrasRepository).findByName("window");
+        assertNotNull(result);
+    }
 }
