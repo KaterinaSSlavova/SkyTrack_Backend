@@ -51,7 +51,7 @@ public class GetAllAirportsUseCaseImplTest {
     }
 
     @Test
-    public void getAllAirports_shouldReturnEmptyList_whenNoAirportsExist() {
+     void getAllAirports_shouldReturnEmptyList_whenNoAirportsExist() {
         //arrange
         when(airportRepository.findByIsArchivedFalse()).thenReturn(List.of());
 

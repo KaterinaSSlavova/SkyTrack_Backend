@@ -39,7 +39,7 @@ public class RegisterUserUseCaseImplTest {
     private RegisterUserUseCaseImpl registerUserUseCaseImpl;
 
     @Test
-    public void registerUser_shouldReturnRegisteredUser_whenUserEmailUniqueAndUserAgeIsValid(){
+     void registerUser_shouldReturnRegisteredUser_whenUserEmailUniqueAndUserAgeIsValid(){
         //arrange
         RoleEntity role = new RoleEntity(1L, Role.PASSENGER);
         UserEntity user = new UserEntity(1L, "picture", "FirstName",
@@ -65,7 +65,7 @@ public class RegisterUserUseCaseImplTest {
     }
 
     @Test
-    public void registerUser_shouldThrowEmailAlreadyExistsException_whenUserEmailExists(){
+     void registerUser_shouldThrowEmailAlreadyExistsException_whenUserEmailExists(){
         //arrange
         RegisterUserRequest request = new RegisterUserRequest("picture", "FirstName",
                 "LastName", LocalDate.now().minusYears(20),
@@ -77,7 +77,7 @@ public class RegisterUserUseCaseImplTest {
     }
 
     @Test
-    public void registerUser_shouldThrowUserTooYoungException_whenUserIsUnder16(){
+     void registerUser_shouldThrowUserTooYoungException_whenUserIsUnder16(){
         //arrange
         RegisterUserRequest request = new RegisterUserRequest("picture", "FirstName",
                 "LastName", LocalDate.now().minusYears(10),

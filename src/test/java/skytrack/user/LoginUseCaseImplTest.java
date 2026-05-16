@@ -38,7 +38,7 @@ public class LoginUseCaseImplTest {
     private LoginUseCaseImpl loginUseCaseImpl;
 
     @Test
-    public void login_shouldReturnLoginResponse_whenUserIsValid() {
+     void login_shouldReturnLoginResponse_whenUserIsValid() {
         //arrange
         LoginUserRequest request = new LoginUserRequest("email@gmail.com", "password");
         UserEntity user = new UserEntity(1L, "picture", "FirstName",
@@ -58,7 +58,7 @@ public class LoginUseCaseImplTest {
     }
 
     @Test
-    public void login_shouldThrowEmailInvalidException_whenEmailDoesNotExist() {
+     void login_shouldThrowEmailInvalidException_whenEmailDoesNotExist() {
         //arrange
         LoginUserRequest request = new LoginUserRequest("email@gmail.com", "password");
         when(userRepository.findByEmail(request.getEmail())).thenReturn(Optional.empty());
@@ -68,7 +68,7 @@ public class LoginUseCaseImplTest {
     }
 
     @Test
-    public void login_shouldThrowUserPasswordInvalidException_whenPasswordDoesNotMatch() {
+     void login_shouldThrowUserPasswordInvalidException_whenPasswordDoesNotMatch() {
         //arrange
         LoginUserRequest request = new LoginUserRequest("email@gmail.com", "password");
         UserEntity user = new UserEntity(1L, "picture", "FirstName",
