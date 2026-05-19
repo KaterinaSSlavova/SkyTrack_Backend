@@ -12,6 +12,7 @@ import skytrack.dto.duffel.DuffelFlightResponse;
 import skytrack.dto.duffel.SavedFlightResponse;
 import skytrack.persistence.entity.AirportEntity;
 import skytrack.persistence.entity.DuffelFlightEntity;
+import skytrack.persistence.enumeration.FlightStatus;
 import skytrack.persistence.repo.AirportRepository;
 import skytrack.persistence.repo.DuffelRepository;
 
@@ -54,6 +55,7 @@ public class SaveDuffelUseCaseImpl implements SaveDuffelUseCase {
                             .orElseThrow(() -> new AirportNotFoundException(response.getArrivalIataCode()));
 
                     DuffelFlightEntity entity = flightMapper.toEntity(response, departureTime, arrivalTime, depAirport, arrAirport);
+                    entity.setStatus(FlightStatus.SCHEDULED);
                     DuffelFlightEntity savedFlight = duffelRepository.save(entity);
                     return flightMapper.toResponse(savedFlight, response.getDepartureLocalTime(), response.getArrivalLocalTime());
                 });
