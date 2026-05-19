@@ -26,7 +26,7 @@ public class ArchiveAirportUseCaseImplTest {
     private ArchiveAirportUseCaseImpl archiveAirportUseCaseImpl;
 
     @Test
-    public void archiveAirport_shouldArchiveAirport_whenAirportExists() {
+     void archiveAirport_shouldArchiveAirport_whenAirportExists() {
         //arrange
         AirportEntity airport = new AirportEntity(1L, "AMS", "Schiphol", "Amsterdam", "Netherlands", "Europe/Amsterdam",false);
         when(airportRepository.findByIdAndIsArchivedFalse(airport.getId()))
@@ -41,7 +41,7 @@ public class ArchiveAirportUseCaseImplTest {
     }
 
     @Test
-    public void archiveAirport_shouldNotArchiveAirport_whenAirportDoNotExists() {
+     void archiveAirport_shouldNotArchiveAirport_whenAirportDoNotExists() {
        //arrange
         Long id = 1L;
         when(airportRepository.findByIdAndIsArchivedFalse(id)).thenReturn(Optional.empty());

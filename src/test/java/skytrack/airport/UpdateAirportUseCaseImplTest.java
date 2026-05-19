@@ -32,7 +32,7 @@ public class UpdateAirportUseCaseImplTest {
     private UpdateAirportUseCaseImpl updateAirportUseCaseImpl;
 
     @Test
-    public void updateAirport_shouldUpdateAirport_whenAirportExists() {
+     void updateAirport_shouldUpdateAirport_whenAirportExists() {
         //arrange
         UpdateAirportRequest request = new UpdateAirportRequest(1L, "AMS", "Schiphol", "Amsterdam", "Netherlands", "Europe/Amsterdam");
         AirportEntity entity = new AirportEntity(1L, "AMS", "Schiphol", "Amsterdam", "Netherlands", "Europe/Amsterdam", false);
@@ -47,7 +47,7 @@ public class UpdateAirportUseCaseImplTest {
     }
 
     @Test
-    public void updateAirport_shouldNotUpdateAirport_whenAirportDoesNotExist() {
+     void updateAirport_shouldNotUpdateAirport_whenAirportDoesNotExist() {
         //arrange
         UpdateAirportRequest request = new UpdateAirportRequest(1L, "AMS", "Schiphol", "Amsterdam", "Netherlands", "Europe/Amsterdam");
         when(airportRepository.existsById(1L)).thenReturn(false);

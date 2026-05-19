@@ -48,7 +48,7 @@ public class DeleteUserUseCaseImplTest {
     }
 
     @Test
-    public void deleteUser_shouldAnonymizeUser_whenUserExists() {
+     void deleteUser_shouldAnonymizeUser_whenUserExists() {
         //arrange
         UserEntity user = new UserEntity(1L, "picture", "FirstName",
                 "LastName", LocalDate.now().minusYears(20),
@@ -69,7 +69,7 @@ public class DeleteUserUseCaseImplTest {
     }
 
     @Test
-    public void deleteUser_shouldThrowUserNotFoundException_whenUserDoesNotExist() {
+     void deleteUser_shouldThrowUserNotFoundException_whenUserDoesNotExist() {
         //arrange
         when(userRepository.findByEmail("email@gmail.com")).thenReturn(Optional.empty());
 

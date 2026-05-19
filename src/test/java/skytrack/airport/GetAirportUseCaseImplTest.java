@@ -50,7 +50,7 @@ public class GetAirportUseCaseImplTest {
     }
 
     @Test
-    public void getAirportById_shouldThrowAirportNotFound_whenAirportDoesNotExist() {
+     void getAirportById_shouldThrowAirportNotFound_whenAirportDoesNotExist() {
         //assert
         Long id = 1L;
         when(airportRepository.findByIdAndIsArchivedFalse(id)).thenReturn(Optional.empty());

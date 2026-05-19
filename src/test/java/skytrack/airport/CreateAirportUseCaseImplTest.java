@@ -33,7 +33,7 @@ public class CreateAirportUseCaseImplTest {
     private CreateAirportUseCaseImpl createAirportUseCaseImpl;
 
     @Test
-    public void createAirport_shouldReturnAirportResponse_whenRequestIsNotNull() {
+     void createAirport_shouldReturnAirportResponse_whenRequestIsNotNull() {
         //arrange
         AirportEntity airport = new AirportEntity(1L, "AMS", "Schiphol", "Amsterdam", "Netherlands", "Europe/Amsterdam", false);
         AirportResponse expectedAirport = new AirportResponse(1L, "AMS", "Schiphol", "Amsterdam", "Netherlands", "Europe/Amsterdam");
@@ -57,7 +57,7 @@ public class CreateAirportUseCaseImplTest {
     }
 
     @Test
-    public void createAirport_shouldThrowAirportAlreadyExistsException_whenIataCodeExists() {
+     void createAirport_shouldThrowAirportAlreadyExistsException_whenIataCodeExists() {
         //arrange
         CreateAirportRequest request = new CreateAirportRequest("AMS", "Schiphol", "Amsterdam", "Netherlands", "Europe/Amsterdam");
         when(airportRepository.existsByIataCode(any(String.class))).thenReturn(true);
