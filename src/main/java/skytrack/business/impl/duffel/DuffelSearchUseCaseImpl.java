@@ -2,6 +2,8 @@ package skytrack.business.impl.duffel;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
@@ -23,13 +25,20 @@ import java.util.stream.Collectors;
 public class DuffelSearchUseCaseImpl implements SearchDuffelFlightUseCase {
     private final WebClient duffelClient;
     private final ObjectMapper mapper;
+    private final CacheManager cacheManager;
 
     @Override
     public Mono<List<DuffelFlightResponse>> searchFlights(String departureIata, String arrivalIata, LocalDate departureDate) {
-        DuffelOfferRequest request = buildRequest(departureIata, arrivalIata, departureDate);
+        String cacheKey = departureIata + "_" + arrivalIata + "_" + departureDate;
+        Cache cache = cacheManager.getCache("flights");
+
+        Cache.ValueWrapper cached = cache.get(cacheKey);
+        if (cached != null) {
+            return Mono.just((List<DuffelFlightResponse>) cached.get());
+        }
 
         return duffelClient.post().uri("/air/offer_requests?return_offers=true")
-                .bodyValue(request)
+                .bodyValue(buildRequest(departureIata, arrivalIata, departureDate))
                 .retrieve()
                 .bodyToMono(String.class)
                 .flatMap(raw -> {
@@ -48,7 +57,8 @@ public class DuffelSearchUseCaseImpl implements SearchDuffelFlightUseCase {
                                 f -> f,
                                 (a, b) -> a.getPrice().compareTo(b.getPrice()) <= 0 ? a : b
                         )).values().stream()
-                        .toList());
+                        .toList())
+                .doOnNext(result -> cache.put(cacheKey, result));
     }
 
     private DuffelOfferRequest buildRequest(String origin, String destination, LocalDate date){

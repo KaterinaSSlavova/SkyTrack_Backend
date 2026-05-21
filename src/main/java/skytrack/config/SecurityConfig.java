@@ -8,6 +8,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import skytrack.presentation.security.JwtAuthenticationFilter;
 
 import java.util.Arrays;
@@ -24,18 +25,15 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-
-                .csrf(csrf -> csrf.disable())
+                .csrf(csrf -> csrf
+                        .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+                        .ignoringRequestMatchers("/auth/**", "/ws/**"))
                 .cors(cors -> cors.configurationSource(request -> {
                     var config = new org.springframework.web.cors.CorsConfiguration();
-
                     config.setAllowedOrigins(Arrays.stream(allowedOrigins.split(",")).toList());
-
                     config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
-                    config.setAllowedHeaders(List.of("*"));
-                    config.setExposedHeaders(List.of("Authorization"));
+                    config.setAllowedHeaders(List.of("Authorization","Content-Type", "X-Requested-With", "X-XSRF-TOKEN"));
                     config.setAllowCredentials(true);
-
                     return config;
                 }))
                 .authorizeHttpRequests(auth -> auth

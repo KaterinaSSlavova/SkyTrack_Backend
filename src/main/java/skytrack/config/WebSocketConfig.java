@@ -11,6 +11,7 @@ import org.springframework.messaging.simp.stomp.StompCommand;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.messaging.support.ChannelInterceptor;
 import org.springframework.messaging.support.MessageHeaderAccessor;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
@@ -18,6 +19,7 @@ import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
 import skytrack.business.service.JwtService;
 
+import java.util.Arrays;
 import java.util.List;
 
 @Configuration
@@ -49,16 +51,22 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                 StompHeaderAccessor accessor = MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor.class);
                 if (accessor != null && StompCommand.CONNECT.equals(accessor.getCommand())) {
                     String authHeader = accessor.getFirstNativeHeader("Authorization");
-                    if (authHeader != null && authHeader.startsWith("Bearer ")) {
-                        String token = authHeader.substring(7);
-                        if (jwtService.isTokenValid(token)) {
-                            String email = jwtService.extractEmailFromToken(token);
-                            String role = jwtService.extractRoleFromToken(token);
-                            UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken
-                                    (email, null, List.of(new SimpleGrantedAuthority("ROLE_" + role)));
-                            accessor.setUser(auth);
-                        }
+
+                    if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+                        throw new AccessDeniedException("Missing authorization header");
                     }
+
+                    String token = authHeader.substring(7);
+
+                    if (!jwtService.isTokenValid(token)) {
+                        throw new AccessDeniedException("Invalid token");
+                    }
+
+                    String email = jwtService.extractEmailFromToken(token);
+                    String role = jwtService.extractRoleFromToken(token);
+                    UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken
+                            (email, null, List.of(new SimpleGrantedAuthority("ROLE_" + role)));
+                    accessor.setUser(auth);
                 }
                 return message;
             }
