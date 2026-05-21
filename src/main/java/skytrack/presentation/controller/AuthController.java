@@ -2,9 +2,12 @@ package skytrack.presentation.controller;
 
 import io.github.bucket4j.Bucket;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -19,6 +22,8 @@ import skytrack.dto.user.LoginUserResponse;
 import skytrack.dto.user.RegisterUserRequest;
 import skytrack.dto.user.UserResponse;
 import skytrack.presentation.security.LoginRateLimiter;
+
+import java.time.Duration;
 
 @RestController
 @RequestMapping("/auth")
@@ -35,7 +40,9 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<LoginUserResponse> login(@RequestBody @Valid LoginUserRequest request, HttpServletRequest httpRequest) {
+    public ResponseEntity<LoginUserResponse> login(@RequestBody @Valid LoginUserRequest request,
+                                                   HttpServletRequest httpRequest,
+                                                   HttpServletResponse httpResponse) {
         String ip = httpRequest.getRemoteAddr();
         Bucket bucket = rateLimiter.resolveBucket(ip);
 
@@ -44,6 +51,16 @@ public class AuthController {
         }
 
         LoginUserResponse response = logInUseCase.login(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+
+        ResponseCookie cookie = ResponseCookie
+                .from("jwt", response.getToken())
+                .httpOnly(true)
+                .secure(false)
+                .sameSite("Strict")
+                .maxAge(Duration.ofMinutes(15))
+                .path("/")
+                .build();
+        httpResponse.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+        return ResponseEntity.ok(response);
     }
 }

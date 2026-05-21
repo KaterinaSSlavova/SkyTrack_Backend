@@ -19,6 +19,7 @@ import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
 import skytrack.business.service.JwtService;
 
+import java.util.Arrays;
 import java.util.List;
 
 @Configuration
@@ -50,11 +51,13 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                 StompHeaderAccessor accessor = MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor.class);
                 if (accessor != null && StompCommand.CONNECT.equals(accessor.getCommand())) {
                     String authHeader = accessor.getFirstNativeHeader("Authorization");
+
                     if (authHeader == null || !authHeader.startsWith("Bearer ")) {
                         throw new AccessDeniedException("Missing authorization header");
                     }
 
                     String token = authHeader.substring(7);
+
                     if (!jwtService.isTokenValid(token)) {
                         throw new AccessDeniedException("Invalid token");
                     }
