@@ -7,6 +7,7 @@ import org.springframework.cache.CacheManager;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
+import skytrack.business.exception.flight.InvalidFlightException;
 import skytrack.business.mapper.DuffelFlightMapper;
 import skytrack.business.useCase.flight.SearchDuffelFlightUseCase;
 import skytrack.dto.duffel.DuffelFlightResponse;
@@ -29,6 +30,10 @@ public class DuffelSearchUseCaseImpl implements SearchDuffelFlightUseCase {
 
     @Override
     public Mono<List<DuffelFlightResponse>> searchFlights(String departureIata, String arrivalIata, LocalDate departureDate) {
+        if(departureIata.equalsIgnoreCase(arrivalIata)) {
+            throw new InvalidFlightException(InvalidFlightException.SAME_AIRPORT);
+        }
+
         String cacheKey = departureIata + "_" + arrivalIata + "_" + departureDate;
         Cache cache = cacheManager.getCache("flights");
 

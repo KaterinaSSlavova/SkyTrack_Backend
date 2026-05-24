@@ -22,16 +22,28 @@ import java.util.Map;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(TooManyRequestsException.class)
-    public ResponseEntity<ErrorResponse> handleUserNotFoundException(TooManyRequestsException ex) {
+    @ExceptionHandler(RefreshTokenException.class)
+    public ResponseEntity<ErrorResponse> handleRefreshTokenException(RefreshTokenException ex) {
         ErrorResponse response = new ErrorResponse(
-                "USER_NOT_FOUND",
+                "REFRESH_TOKEN_EXPIRATION",
                 ex.getMessage(),
-                HttpStatus.NOT_FOUND.value(),
+                HttpStatus.UNAUTHORIZED.value(),
                 LocalDateTime.now()
         );
 
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+    }
+
+    @ExceptionHandler(TooManyRequestsException.class)
+    public ResponseEntity<ErrorResponse> handleUserNotFoundException(TooManyRequestsException ex) {
+        ErrorResponse response = new ErrorResponse(
+                "TOO_MANY_REQUESTS",
+                ex.getMessage(),
+                HttpStatus.TOO_MANY_REQUESTS.value(),
+                LocalDateTime.now()
+        );
+
+        return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body(response);
     }
 
     @ExceptionHandler(UserNotFoundException.class)
