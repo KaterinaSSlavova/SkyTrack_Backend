@@ -8,6 +8,7 @@ import skytrack.business.exception.user.UserTooOldException;
 import skytrack.business.exception.user.UserTooYoungException;
 import skytrack.business.mapper.UserMapper;
 import skytrack.business.service.PasswordService;
+import skytrack.business.useCase.service.PassengerValidation;
 import skytrack.business.useCase.user.RegisterUserUseCase;
 import skytrack.dto.user.RegisterUserRequest;
 import skytrack.dto.user.UserResponse;
@@ -27,13 +28,12 @@ public class RegisterUserUseCaseImpl implements RegisterUserUseCase {
     private final UserRepository userRepository;
     private final PasswordService passwordService;
     private final RoleRepository roleRepository;
+    private final PassengerValidation passengerValidation;
 
     @Override
     public UserResponse registerUser(RegisterUserRequest request) {
         if(userRepository.existsByEmail(request.getEmail())) throw new UserEmailAlreadyExistsException(request.getEmail());
-        int age = Period.between(request.getBirthDate(), LocalDate.now()).getYears();
-        if(age < 16) throw new UserTooYoungException();
-        if(age > 120) throw new UserTooOldException();
+        passengerValidation.validateAge(request.getBirthDate());
 
         UserEntity user = UserMapper.toEntity(request);
         user.setPasswordHash(passwordService.HashPassword(request.getPassword()));

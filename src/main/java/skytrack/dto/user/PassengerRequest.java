@@ -30,7 +30,7 @@ public class PassengerRequest {
     @NotBlank(message = "Passport number is required.")
     private String passportNumber;
 
-    @NotBlank(message = "Please select the date of birth of the passenger.")
+    @NotNull(message = "Please select the date of birth of the passenger.")
     private LocalDate dateOfBirth;
 
     @NotNull(message = "Please enter passport expiration.")
