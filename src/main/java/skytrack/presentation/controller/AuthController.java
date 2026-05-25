@@ -98,7 +98,7 @@ public class AuthController {
 
         ResponseCookie jwtCookie = ResponseCookie.from("jwt", newToken)
                 .httpOnly(true)
-                .secure(false)
+                .secure(cookieSecure)
                 .sameSite("Strict")
                 .maxAge(Duration.ofMinutes(15))
                 .path("/")
