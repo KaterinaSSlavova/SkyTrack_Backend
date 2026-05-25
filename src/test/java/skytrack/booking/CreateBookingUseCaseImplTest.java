@@ -14,14 +14,18 @@ import skytrack.business.mapper.PassengerMapper;
 import skytrack.business.service.BookingReferenceGenerator;
 import skytrack.business.service.TimeConverter;
 import skytrack.business.service.UserService;
+import skytrack.business.useCase.service.PassengerValidation;
 import skytrack.dto.booking.BookingResponse;
 import skytrack.dto.booking.CreateBookingRequest;
 import skytrack.dto.duffel.DuffelFlightResponse;
+import skytrack.dto.user.PassengerRequest;
 import skytrack.persistence.entity.*;
+import skytrack.persistence.enumeration.Gender;
 import skytrack.persistence.repo.*;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
@@ -34,6 +38,9 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class CreateBookingUseCaseImplTest {
+    @Mock
+    private PassengerValidation passengerValidation;
+
     @Mock
     private UserService userService;
 
@@ -74,9 +81,24 @@ public class CreateBookingUseCaseImplTest {
         flight.setDepartureTimezone("Europe/Amsterdam");
         flight.setExternalId("ext-123");
 
+        PassengerRequest passenger =
+                new PassengerRequest(
+                        "John",
+                        "Doe",
+                        "john@test.com",
+                        "FEMALE",
+                        "AB123456",
+                        LocalDate.of(2000, 1, 1),
+                        LocalDate.now().plusYears(5),
+                        "Dutch"
+                );
+
         CreateBookingRequest request = new CreateBookingRequest();
+
         request.setFlight(flight);
         request.setSeatId(1L);
+        request.setPassenger(passenger);
+
         return request;
     }
 

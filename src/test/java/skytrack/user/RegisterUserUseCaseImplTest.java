@@ -9,6 +9,7 @@ import skytrack.business.exception.user.UserEmailAlreadyExistsException;
 import skytrack.business.exception.user.UserTooYoungException;
 import skytrack.business.impl.user.RegisterUserUseCaseImpl;
 import skytrack.business.service.PasswordService;
+import skytrack.business.useCase.service.PassengerValidation;
 import skytrack.dto.user.RegisterUserRequest;
 import skytrack.dto.user.UserResponse;
 import skytrack.persistence.entity.RoleEntity;
@@ -26,6 +27,9 @@ import static org.mockito.ArgumentMatchers.any;
 
 @ExtendWith(MockitoExtension.class)
 public class RegisterUserUseCaseImplTest {
+    @Mock
+    private PassengerValidation passengerValidation;
+
     @Mock
     private UserRepository userRepository;
 
