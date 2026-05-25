@@ -1,5 +1,6 @@
 package skytrack.presentation.controller;
 
+import com.stripe.exception.StripeException;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
@@ -188,6 +189,17 @@ public class GlobalExceptionHandler {
         );
 
         return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+    }
+
+    @ExceptionHandler(StripeException.class)
+    public ResponseEntity<ErrorResponse> handleStripeException(StripeException ex) {
+        ErrorResponse response = new ErrorResponse(
+                "PAYMENT_ERROR",
+                ex.getMessage(),
+                HttpStatus.BAD_GATEWAY.value(),
+                LocalDateTime.now()
+        );
+        return ResponseEntity.status(HttpStatus.BAD_GATEWAY).body(response);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

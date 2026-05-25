@@ -38,6 +38,7 @@ app:
   base-url: ${BASE_URL}
   cors:
     allowed-origins: ${ALLOWED_ORIGINS}
+    cookieSecure: ${COOKIE_SECURE}
 
 stripe:
   secret-key: ${STRIPE_SECRET_KEY}

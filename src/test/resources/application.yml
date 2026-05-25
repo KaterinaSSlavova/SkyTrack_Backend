@@ -24,7 +24,8 @@ logging:
 
 jwt:
   secret: ${JWT_SECRET}
-  expiration-ms: 86400000
+  expiration-ms: 900000
+  refresh-expiration-ms: 604800000
 
 duffel:
   api:
@@ -36,4 +37,9 @@ frankfurter:
 app:
   base-url: ${BASE_URL}
   cors:
-    allowed-origins: http://localhost:3000
+    allowed-origins: ${ALLOWED_ORIGINS}
+    cookieSecure: ${COOKIE_SECURE}
+
+stripe:
+  secret-key: ${STRIPE_SECRET_KEY}
+  publishable-key: ${STRIPE_PUBLISHABLE_KEY}
