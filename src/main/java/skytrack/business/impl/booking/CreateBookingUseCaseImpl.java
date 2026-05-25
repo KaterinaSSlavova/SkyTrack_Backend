@@ -11,6 +11,7 @@ import skytrack.business.service.BookingReferenceGenerator;
 import skytrack.business.service.TimeConverter;
 import skytrack.business.service.UserService;
 import skytrack.business.useCase.booking.CreateBookingUseCase;
+import skytrack.business.useCase.service.PassengerValidation;
 import skytrack.dto.booking.BookingResponse;
 import skytrack.dto.booking.CreateBookingRequest;
 import skytrack.persistence.entity.*;
@@ -32,6 +33,7 @@ public class CreateBookingUseCaseImpl implements CreateBookingUseCase {
     private final PassengerRepository passengerRepository;
     private final PassengerMapper passengerMapper;
     private final TimeConverter timeConverter;
+    private final PassengerValidation passengerValidation;
 
     @Override
     public BookingResponse toResponse(CreateBookingRequest request) {
@@ -51,6 +53,7 @@ public class CreateBookingUseCaseImpl implements CreateBookingUseCase {
         BigDecimal totalPrice = calculateTotalPrice(seat, flight.getPrice());
         String bookingReference = referenceGenerator.generate();
 
+        passengerValidation.validateAge(request.getPassenger().getDateOfBirth());
         PassengerEntity passenger = passengerMapper.toEntity(request.getPassenger());
         passengerRepository.save(passenger);
 

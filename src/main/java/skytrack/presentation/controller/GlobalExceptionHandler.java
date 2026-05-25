@@ -191,6 +191,18 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
     }
 
+    @ExceptionHandler(InvalidPassportException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidPassportException(InvalidPassportException ex) {
+        ErrorResponse response = new ErrorResponse(
+                "INVALID_PASSPORT",
+                ex.getMessage(),
+                HttpStatus.BAD_REQUEST.value(),
+                LocalDateTime.now()
+        );
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+    }
+
     @ExceptionHandler(StripeException.class)
     public ResponseEntity<ErrorResponse> handleStripeException(StripeException ex) {
         ErrorResponse response = new ErrorResponse(
