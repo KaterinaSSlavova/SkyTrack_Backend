@@ -19,7 +19,6 @@ import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
 import skytrack.business.service.JwtService;
 
-import java.util.Arrays;
 import java.util.List;
 
 @Configuration
@@ -27,6 +26,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     private final JwtService jwtService;
+    private final JwtHandshakeInterceptor jwtHandshakeInterceptor;
 
     @Value("${app.cors.allowed-origins}")
     private String allowedOrigins;
@@ -34,7 +34,8 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint("/ws")
-                .setAllowedOrigins(allowedOrigins.split(","));
+                .setAllowedOrigins(allowedOrigins.split(","))
+                .addInterceptors(jwtHandshakeInterceptor);
     }
 
     @Override
@@ -50,13 +51,11 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
             public Message<?> preSend(Message<?> message, MessageChannel channel) {
                 StompHeaderAccessor accessor = MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor.class);
                 if (accessor != null && StompCommand.CONNECT.equals(accessor.getCommand())) {
-                    String authHeader = accessor.getFirstNativeHeader("Authorization");
+                    String token = (String) accessor.getSessionAttributes().get("jwt");
 
-                    if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-                        throw new AccessDeniedException("Missing authorization header");
+                    if (token == null) {
+                        throw new AccessDeniedException("Missing jwt cookie");
                     }
-
-                    String token = authHeader.substring(7);
 
                     if (!jwtService.isTokenValid(token)) {
                         throw new AccessDeniedException("Invalid token");

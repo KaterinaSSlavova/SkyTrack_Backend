@@ -31,6 +31,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+        SecurityContextHolder.clearContext();
+
         String token = null;
         if(request.getCookies() != null) {
             token = Arrays.stream(request.getCookies())
@@ -39,7 +41,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         if (token == null) {
-            filterChain.doFilter(request, response);
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             return;
         }
 
@@ -50,6 +52,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         String email = jwtService.extractEmailFromToken(token);
         String role = jwtService.extractRoleFromToken(token);
+
         UsernamePasswordAuthenticationToken authentication =
                 new UsernamePasswordAuthenticationToken(email, null,  List.of(new SimpleGrantedAuthority("ROLE_"+role)));
         authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));

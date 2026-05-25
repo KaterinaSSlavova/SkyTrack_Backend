@@ -10,8 +10,10 @@ import skytrack.business.exception.user.UserPasswordInvalidException;
 import skytrack.business.impl.user.LoginUseCaseImpl;
 import skytrack.business.service.JwtService;
 import skytrack.business.service.PasswordService;
+import skytrack.business.service.RefreshTokenService;
 import skytrack.dto.user.LoginUserRequest;
 import skytrack.dto.user.LoginUserResponse;
+import skytrack.persistence.entity.RefreshToken;
 import skytrack.persistence.entity.RoleEntity;
 import skytrack.persistence.entity.UserEntity;
 import skytrack.persistence.enumeration.Role;
@@ -21,10 +23,14 @@ import java.time.LocalDate;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class LoginUseCaseImplTest {
+    @Mock
+    private RefreshTokenService refreshTokenService;
+
     @Mock
     private UserRepository userRepository;
 
@@ -49,6 +55,9 @@ public class LoginUseCaseImplTest {
         when(jwtService.generateToken(user.getEmail(), user.getRole().getRoleName().name())).thenReturn("token");
 
         //act
+        RefreshToken mockRefreshToken = mock(RefreshToken.class);
+        when(mockRefreshToken.getToken()).thenReturn("refresh-token");
+        when(refreshTokenService.createToken(user.getId())).thenReturn(mockRefreshToken);
         LoginUserResponse response = loginUseCaseImpl.login(request);
 
         //assert
