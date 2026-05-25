@@ -22,6 +22,7 @@ import java.time.LocalDate;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 import static org.mockito.ArgumentMatchers.any;
 
@@ -86,7 +87,11 @@ public class RegisterUserUseCaseImplTest {
         RegisterUserRequest request = new RegisterUserRequest("picture", "FirstName",
                 "LastName", LocalDate.now().minusYears(10),
                 "userEmail@gmail.com", "Pass");
+
         when(userRepository.existsByEmail(request.getEmail())).thenReturn(false);
+        doThrow(new UserTooYoungException())
+                .when(passengerValidation)
+                .validateAge(request.getBirthDate());
 
         // act and assert
         assertThrows(UserTooYoungException.class, () -> registerUserUseCaseImpl.registerUser(request));
