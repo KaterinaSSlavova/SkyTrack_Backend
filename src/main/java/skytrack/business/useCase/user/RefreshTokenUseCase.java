@@ -1,5 +1,7 @@
 package skytrack.business.useCase.user;
 
+import skytrack.dto.user.RefreshResult;
+
 public interface RefreshTokenUseCase {
-    String refresh(String refreshToken);
+    RefreshResult refresh(String refreshToken);
 }

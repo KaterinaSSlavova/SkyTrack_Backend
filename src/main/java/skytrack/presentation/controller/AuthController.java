@@ -16,10 +16,7 @@ import skytrack.business.useCase.user.LogInUseCase;
 import skytrack.business.useCase.user.LogoutUseCase;
 import skytrack.business.useCase.user.RefreshTokenUseCase;
 import skytrack.business.useCase.user.RegisterUserUseCase;
-import skytrack.dto.user.LoginUserRequest;
-import skytrack.dto.user.LoginUserResponse;
-import skytrack.dto.user.RegisterUserRequest;
-import skytrack.dto.user.UserResponse;
+import skytrack.dto.user.*;
 import skytrack.presentation.security.LoginRateLimiter;
 
 import java.time.Duration;
@@ -94,9 +91,9 @@ public class AuthController {
     @PostMapping("/refresh")
     public ResponseEntity<Void> refresh(@CookieValue("refreshToken") String refreshToken,
                                         HttpServletResponse httpResponse) {
-        String newToken = refreshTokenUseCase.refresh(refreshToken);
+        RefreshResult result = refreshTokenUseCase.refresh(refreshToken);
 
-        ResponseCookie jwtCookie = ResponseCookie.from("jwt", newToken)
+        ResponseCookie jwtCookie = ResponseCookie.from("jwt", result.getRefreshToken())
                 .httpOnly(true)
                 .secure(cookieSecure)
                 .sameSite("Strict")
@@ -104,7 +101,17 @@ public class AuthController {
                 .path("/")
                 .build();
 
+        ResponseCookie refreshTokenCookie = ResponseCookie
+                .from("refreshToken", result.getRefreshToken())
+                .httpOnly(true)
+                .secure(cookieSecure)
+                .sameSite("Strict")
+                .maxAge(Duration.ofDays(7))
+                .path("/")
+                .build();
+
         httpResponse.addHeader(HttpHeaders.SET_COOKIE, jwtCookie.toString());
+        httpResponse.addHeader(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString());
         return ResponseEntity.noContent().build();
     }
 }
