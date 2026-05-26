@@ -114,4 +114,9 @@ public class AuthController {
         httpResponse.addHeader(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString());
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/csrf")
+    public ResponseEntity<Void> csrf() {
+        return ResponseEntity.ok().build();
+    }
 }
