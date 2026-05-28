@@ -9,7 +9,10 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import skytrack.business.service.QrGenerator;
 import skytrack.business.useCase.booking.*;
+import skytrack.business.useCase.statistics.GetNextFlightUseCase;
+import skytrack.business.useCase.statistics.GetStatisticsUseCase;
 import skytrack.dto.booking.BookingResponse;
+import skytrack.dto.booking.BookingStatsResponse;
 import skytrack.dto.booking.CreateBookingRequest;
 
 import java.util.List;
@@ -24,6 +27,8 @@ public class BookingController {
     private final GetBookingUseCase getBookingUseCase;
     private final CancelBookingUseCase cancelBookingUseCase;
     private final GetBookingByReferenceUseCase getBookingByReferenceUseCase;
+    private final GetStatisticsUseCase getStatisticsUseCase;
+    private final GetNextFlightUseCase getNextFlightUseCase;
 
     @PreAuthorize("hasAnyRole('PASSENGER', 'ADMIN')")
     @GetMapping("{reference}/qr")
@@ -64,5 +69,21 @@ public class BookingController {
     public ResponseEntity<BookingResponse> cancelBooking(@PathVariable("id") final Long id) {
         cancelBookingUseCase.cancelBooking(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @PreAuthorize("hasRole('PASSENGER')")
+    @GetMapping("/upcoming")
+    public ResponseEntity<BookingResponse> getNextFlight(){
+        BookingResponse upcoming  = getNextFlightUseCase.getNextFlight();
+        if(upcoming == null){
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok().body(upcoming);
+    }
+
+    @PreAuthorize("hasRole('PASSENGER')")
+    @GetMapping("/statistics")
+    public ResponseEntity<BookingStatsResponse> getStatistics(){
+        return ResponseEntity.ok().body(getStatisticsUseCase.getStatistics());
     }
 }
