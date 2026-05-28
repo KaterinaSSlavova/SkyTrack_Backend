@@ -2,6 +2,7 @@ package skytrack.business.impl.user;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import skytrack.business.service.JwtService;
 import skytrack.business.service.RefreshTokenService;
 import skytrack.business.useCase.user.RefreshTokenUseCase;
@@ -11,6 +12,7 @@ import skytrack.persistence.entity.UserEntity;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class RefreshTokenUseCaseImpl implements RefreshTokenUseCase {
     private final RefreshTokenService refreshTokenService;
     private final JwtService jwtService;
