@@ -14,6 +14,7 @@ public interface BookingRepository extends JpaRepository<BookingEntity, Long> {
     List<BookingEntity> findByExternalFlight_Id(Long flightId);
     BookingEntity getByBookingReference(String reference);
     long countByUser_Id(Long userId);
+    List<BookingEntity> findByUser_Id(Long userId);
 
     @Query("""
               SELECT COALESCE(SUM(b.totalPrice), 0)
