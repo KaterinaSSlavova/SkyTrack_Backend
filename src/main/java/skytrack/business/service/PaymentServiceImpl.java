@@ -23,7 +23,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @Service
 @RequiredArgsConstructor
 public class PaymentServiceImpl implements PaymentService {
-    private final Map<String, CreateBookingRequest> pendingBooking = new ConcurrentHashMap<>();
+    private Map<String, CreateBookingRequest> pendingBooking = new ConcurrentHashMap<>();
     private final PriceCalculationService priceCalculationService;
     private final SeatRepository seatRepository;
     private final TimeConverter timeConverter;
