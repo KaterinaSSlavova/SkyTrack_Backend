@@ -8,6 +8,7 @@ import skytrack.business.exception.seat.SeatNotFoundException;
 import skytrack.business.mapper.BookingMapper;
 import skytrack.business.mapper.PassengerMapper;
 import skytrack.business.service.BookingReferenceGenerator;
+import skytrack.business.service.PriceCalculationService;
 import skytrack.business.service.TimeConverter;
 import skytrack.business.service.UserService;
 import skytrack.business.useCase.booking.CreateBookingUseCase;
@@ -27,13 +28,13 @@ public class CreateBookingUseCaseImpl implements CreateBookingUseCase {
     private final DuffelRepository duffelRepository;
     private final SeatRepository seatRepository;
     private final BookingRepository bookingRepository;
-    private final ExtrasRepository extrasRepository;
     private final BookingMapper bookingMapper;
     private final BookingReferenceGenerator referenceGenerator;
     private final PassengerRepository passengerRepository;
     private final PassengerMapper passengerMapper;
     private final TimeConverter timeConverter;
     private final PassengerValidation passengerValidation;
+    private final PriceCalculationService priceCalculationService;
 
     @Override
     public BookingResponse toResponse(CreateBookingRequest request) {
@@ -50,7 +51,7 @@ public class CreateBookingUseCaseImpl implements CreateBookingUseCase {
             throw new SeatNotAvailableException(seat.getSeatNumber());
         }
 
-        BigDecimal totalPrice = calculateTotalPrice(seat, flight.getPrice());
+        BigDecimal totalPrice = priceCalculationService.calculate(seat, flight.getPrice());
         String bookingReference = referenceGenerator.generate();
 
         passengerValidation.validateAge(request.getPassenger().getDateOfBirth());
@@ -59,20 +60,5 @@ public class CreateBookingUseCaseImpl implements CreateBookingUseCase {
 
         BookingEntity booking = bookingMapper.toEntity(request, loggedUser, flight, passenger, seat, totalPrice, bookingReference);
         return bookingMapper.toResponse(bookingRepository.save(booking));
-    }
-
-    private BigDecimal calculateTotalPrice(SeatEntity seat, BigDecimal flightPrice) {
-        BigDecimal total = flightPrice;
-
-        if(seat.getExtraLegroom()){
-            BigDecimal price = extrasRepository.findByName("extra_legroom").getPrice();
-            total = total.add(price);
-        }
-
-        if(seat.getWindow()){
-            BigDecimal price = extrasRepository.findByName("window").getPrice();
-            total = total.add(price);
-        }
-        return total;
     }
 }
