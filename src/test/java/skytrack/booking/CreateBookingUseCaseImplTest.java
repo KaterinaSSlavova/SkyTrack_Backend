@@ -12,6 +12,7 @@ import skytrack.business.impl.booking.CreateBookingUseCaseImpl;
 import skytrack.business.mapper.BookingMapper;
 import skytrack.business.mapper.PassengerMapper;
 import skytrack.business.service.BookingReferenceGenerator;
+import skytrack.business.service.PriceCalculationService;
 import skytrack.business.service.TimeConverter;
 import skytrack.business.service.UserService;
 import skytrack.business.useCase.service.PassengerValidation;
@@ -20,7 +21,6 @@ import skytrack.dto.booking.CreateBookingRequest;
 import skytrack.dto.duffel.DuffelFlightResponse;
 import skytrack.dto.user.PassengerRequest;
 import skytrack.persistence.entity.*;
-import skytrack.persistence.enumeration.Gender;
 import skytrack.persistence.repo.*;
 
 import java.math.BigDecimal;
@@ -54,9 +54,6 @@ public class CreateBookingUseCaseImplTest {
     private BookingRepository bookingRepository;
 
     @Mock
-    private ExtrasRepository extrasRepository;
-
-    @Mock
     private BookingMapper bookingMapper;
 
     @Mock
@@ -70,6 +67,9 @@ public class CreateBookingUseCaseImplTest {
 
     @Mock
     private TimeConverter timeConverter;
+
+    @Mock
+    private PriceCalculationService priceCalculationService;
 
     @InjectMocks
     private CreateBookingUseCaseImpl createBooking;
@@ -153,8 +153,7 @@ public class CreateBookingUseCaseImplTest {
         when(duffelRepository.findByFlightNumberAndDepartureTime(any(), any())).thenReturn(Optional.of(flight));
         when(seatRepository.findById(any())).thenReturn(Optional.of(seat));
         when(bookingRepository.existsByExternalFlight_IdAndSeat_Id(any(), any())).thenReturn(false);
-        when(extrasRepository.findByName("window")).thenReturn(windowExtra);
-        when(extrasRepository.findByName("extra_legroom")).thenReturn(legroomExtra);
+        when(priceCalculationService.calculate(seat, flight.getPrice())).thenReturn(new BigDecimal("135.00"));
         when(referenceGenerator.generate()).thenReturn("SKY-ABC123");
         when(passengerMapper.toEntity(any())).thenReturn(new PassengerEntity());
         when(passengerRepository.save(any())).thenReturn(new PassengerEntity());
@@ -166,8 +165,7 @@ public class CreateBookingUseCaseImplTest {
         BookingResponse result = createBooking.toResponse(buildRequest());
 
         //assert
-        verify(extrasRepository).findByName("window");
-        verify(extrasRepository).findByName("extra_legroom");
+        verify(priceCalculationService).calculate(seat, flight.getPrice());
         assertNotNull(result);
     }
 
@@ -189,7 +187,7 @@ public class CreateBookingUseCaseImplTest {
         when(duffelRepository.findByFlightNumberAndDepartureTime(any(), any())).thenReturn(Optional.of(flight));
         when(seatRepository.findById(any())).thenReturn(Optional.of(seat));
         when(bookingRepository.existsByExternalFlight_IdAndSeat_Id(any(), any())).thenReturn(false);
-        when(extrasRepository.findByName("window")).thenReturn(windowExtra);
+        when(priceCalculationService.calculate(seat, flight.getPrice())).thenReturn(new BigDecimal("135.00"));
         when(referenceGenerator.generate()).thenReturn("SKY-ABC123");
         when(passengerMapper.toEntity(any())).thenReturn(new PassengerEntity());
         when(passengerRepository.save(any())).thenReturn(new PassengerEntity());
@@ -201,7 +199,7 @@ public class CreateBookingUseCaseImplTest {
         BookingResponse result = createBooking.toResponse(buildRequest());
 
         // assert
-        verify(extrasRepository).findByName("window");
+        verify(priceCalculationService).calculate(seat, flight.getPrice());
         assertNotNull(result);
     }
 }
