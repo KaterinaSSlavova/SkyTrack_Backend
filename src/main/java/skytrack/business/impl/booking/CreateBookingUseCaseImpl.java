@@ -3,8 +3,10 @@ package skytrack.business.impl.booking;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import skytrack.business.exception.flight.FlightNotFoundException;
+import skytrack.business.exception.flight.InvalidFlightException;
 import skytrack.business.exception.seat.SeatNotAvailableException;
 import skytrack.business.exception.seat.SeatNotFoundException;
+import skytrack.business.exception.user.InvalidPassportException;
 import skytrack.business.mapper.BookingMapper;
 import skytrack.business.mapper.PassengerMapper;
 import skytrack.business.service.BookingReferenceGenerator;
@@ -55,6 +57,10 @@ public class CreateBookingUseCaseImpl implements CreateBookingUseCase {
         String bookingReference = referenceGenerator.generate();
 
         passengerValidation.validateAge(request.getPassenger().getDateOfBirth());
+        if(!request.getPassenger().getPassportExpiry()
+                .isAfter(request.getFlight().getDepartureLocalTime().toLocalDate().plusMonths(6))){
+            throw new InvalidPassportException("Your passport must be valid for at least 6 months after your departure date");
+        }
         PassengerEntity passenger = passengerMapper.toEntity(request.getPassenger());
         passengerRepository.save(passenger);
 
