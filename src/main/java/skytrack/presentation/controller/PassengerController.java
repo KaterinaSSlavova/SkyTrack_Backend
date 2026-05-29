@@ -4,12 +4,11 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import skytrack.business.useCase.service.PassengerValidation;
 import skytrack.dto.user.PassengerRequest;
+
+import java.time.LocalDate;
 
 @RestController
 @RequiredArgsConstructor
@@ -19,9 +18,11 @@ public class PassengerController {
 
     @PreAuthorize("hasRole('PASSENGER')")
     @PostMapping("/validate")
-    public ResponseEntity<Void> validatePassenger(@RequestBody @Valid PassengerRequest request) {
+    public ResponseEntity<Void> validatePassenger(@RequestBody @Valid PassengerRequest request,
+                                                  @RequestParam LocalDate departureDate) {
         passengerValidation.validateAge(request.getDateOfBirth());
         passengerValidation.validatePassportNumber(request.getPassportNumber());
+        passengerValidation.validatePassportExpiration(request.getPassportExpiry(), departureDate);
         return ResponseEntity.noContent().build();
     }
 }

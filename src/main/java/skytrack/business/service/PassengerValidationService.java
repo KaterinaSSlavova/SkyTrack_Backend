@@ -34,4 +34,19 @@ public class PassengerValidationService implements PassengerValidation {
             throw new InvalidPassportException("Passport must contain only letters and numbers");
         }
     }
+
+    @Override
+    public void validatePassportExpiration(LocalDate expirationDate, LocalDate departureDate) {
+        if(expirationDate == null) throw new InvalidPassportException("Expiration Date is required");
+
+        if (!expirationDate.isAfter(departureDate)) {
+            throw new InvalidPassportException("Your passport expires before your departure date");
+        }
+
+        if (!expirationDate.isAfter(departureDate.plusMonths(6))) {
+            throw new InvalidPassportException(
+                    "Your passport must be valid for at least 6 months after your departure date"
+            );
+        }
+    }
 }

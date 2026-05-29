@@ -22,6 +22,6 @@ public class GetAllNotificationsUseCaseImpl implements GetAllNotificationsUseCas
         String email = userService.getLoggedUser().getEmail();
         return notificationRepository.findAll().stream()
                 .filter(u -> u.getUser().getEmail().equals(email))
-                .map(notificationMapper::toResponse).toList();
+                .map(notificationMapper::toResponse).toList().reversed();
     }
 }

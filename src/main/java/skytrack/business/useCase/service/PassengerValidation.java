@@ -5,4 +5,5 @@ import java.time.LocalDate;
 public interface PassengerValidation {
     void validateAge(LocalDate birthDate);
     void validatePassportNumber(String passportNumber);
+    void validatePassportExpiration(LocalDate expirationDate, LocalDate departureDate);
 }
