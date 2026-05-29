@@ -56,7 +56,7 @@ public class AuthController {
         ResponseCookie jwtCookie = ResponseCookie
                 .from("jwt", response.getToken())
                 .httpOnly(true).secure(cookieSecure).sameSite("Strict")
-                .maxAge(Duration.ofMinutes(2)).path("/").build();
+                .maxAge(Duration.ofMinutes(15)).path("/").build();
 
         ResponseCookie refreshTokenCookie = ResponseCookie
                 .from("refreshToken", response.getRefreshToken())
@@ -97,7 +97,7 @@ public class AuthController {
                 .httpOnly(true)
                 .secure(cookieSecure)
                 .sameSite("Strict")
-                .maxAge(Duration.ofMinutes(2))
+                .maxAge(Duration.ofMinutes(15))
                 .path("/")
                 .build();
 
