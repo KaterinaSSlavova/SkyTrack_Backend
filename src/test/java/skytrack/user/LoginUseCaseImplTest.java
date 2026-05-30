@@ -23,6 +23,7 @@ import java.time.LocalDate;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -88,5 +89,47 @@ public class LoginUseCaseImplTest {
 
         //act and assert
         assertThrows(UserPasswordInvalidException.class, () -> loginUseCaseImpl.login(request));
+    }
+
+    @Test
+    void login_shouldReturnRefreshTokenInResponse() {
+        LoginUserRequest request =
+                new LoginUserRequest("email@gmail.com", "password");
+
+        UserEntity user = new UserEntity(
+                1L,
+                "picture",
+                "FirstName",
+                "LastName",
+                LocalDate.now().minusYears(20),
+                "email@gmail.com",
+                "HashedPass",
+                new RoleEntity(1L, Role.PASSENGER)
+        );
+
+        RefreshToken refreshToken = mock(RefreshToken.class);
+
+        when(userRepository.findByEmail(request.getEmail()))
+                .thenReturn(Optional.of(user));
+
+        when(passwordService.checkPassword(
+                request.getPassword(),
+                user.getPasswordHash()))
+                .thenReturn(true);
+
+        when(jwtService.generateToken(anyString(), anyString()))
+                .thenReturn("jwt-token");
+
+        when(refreshToken.getToken())
+                .thenReturn("refresh-token");
+
+        when(refreshTokenService.createToken(user.getId()))
+                .thenReturn(refreshToken);
+
+        LoginUserResponse response =
+                loginUseCaseImpl.login(request);
+
+        assertEquals("refresh-token",
+                response.getRefreshToken());
     }
 }

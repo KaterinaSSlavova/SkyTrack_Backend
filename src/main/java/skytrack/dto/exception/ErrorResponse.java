@@ -1,6 +1,5 @@
 package skytrack.dto.exception;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
