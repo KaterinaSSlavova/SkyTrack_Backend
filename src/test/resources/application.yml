@@ -1,45 +1,36 @@
 spring:
   datasource:
-    url: ${Db_url}
-    username: ${Db_username}
-    password: ${Db_password}
-    hikari:
-      maximum-pool-size: 3
-      minimum-idle: 1
-
+    url: jdbc:h2:mem:testdb
+    username: sa
+    password:
   jpa:
     hibernate:
-      ddl-auto: validate
-
+      ddl-auto: none
   flyway:
-    enabled: true
+    enabled: false
 
 sentry:
-  dsn: https://3c587baa3f7b670fa78794a0d924b298@o4511095744954368.ingest.de.sentry.io/4511095771824208
-  traces-sample-rate: 1.0
-
-logging:
-  level:
-    skytrack: INFO
+  dsn:
+  traces-sample-rate: 0.0
 
 jwt:
-  secret: ${JWT_SECRET}
+  secret: myVerySecretKeyForJwtTesting12345678901234567890
   expiration-ms: 900000
   refresh-expiration-ms: 604800000
 
 duffel:
   api:
-    key: ${DUFFEL_API_KEY}
+    key: test-duffel-key
 
 frankfurter:
-  base_url: ${FRANKFURT_URL}
+  base_url: https://api.frankfurter.app
 
 app:
-  base-url: ${BASE_URL}
+  base-url: http://localhost:8080
   cors:
-    allowed-origins: ${ALLOWED_ORIGINS}
-    cookieSecure: ${COOKIE_SECURE}
+    allowed-origins: http://localhost:5173
+    cookieSecure: false
 
 stripe:
-  secret-key: ${STRIPE_SECRET_KEY}
-  publishable-key: ${STRIPE_PUBLISHABLE_KEY}
+  secret-key: sk_test_fake
+  publishable-key: pk_test_fake

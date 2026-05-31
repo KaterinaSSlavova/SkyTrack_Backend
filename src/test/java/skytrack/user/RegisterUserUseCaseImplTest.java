@@ -5,6 +5,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import skytrack.business.exception.user.RoleNotFoundException;
 import skytrack.business.exception.user.UserEmailAlreadyExistsException;
 import skytrack.business.exception.user.UserTooYoungException;
 import skytrack.business.impl.user.RegisterUserUseCaseImpl;
@@ -95,5 +96,31 @@ public class RegisterUserUseCaseImplTest {
 
         // act and assert
         assertThrows(UserTooYoungException.class, () -> registerUserUseCaseImpl.registerUser(request));
+    }
+
+    @Test
+    void registerUser_shouldThrowRoleNotFoundException_whenPassengerRoleDoesNotExist() {
+        // Arrange
+        RegisterUserRequest request = new RegisterUserRequest(
+                "picture",
+                "FirstName",
+                "LastName",
+                LocalDate.now().minusYears(20),
+                "userEmail@gmail.com",
+                "Pass"
+        );
+
+        when(userRepository.existsByEmail(request.getEmail()))
+                .thenReturn(false);
+
+        when(passwordService.HashPassword(request.getPassword()))
+                .thenReturn("HashedPass");
+
+        when(roleRepository.findByRoleName(Role.PASSENGER))
+                .thenReturn(Optional.empty());
+
+        // Act & Assert
+        assertThrows(RoleNotFoundException.class,
+                () -> registerUserUseCaseImpl.registerUser(request));
     }
 }

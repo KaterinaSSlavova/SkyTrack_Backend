@@ -31,22 +31,7 @@ jacoco {
 tasks.named('test') {
     useJUnitPlatform()
     finalizedBy jacocoTestReport
-
-    def envFile = file("${rootDir}/.env")
-
-    if (envFile.exists()) {
-        envFile.readLines().each { line ->
-            line = line.trim()
-
-            if (!line.isEmpty() && !line.startsWith('#')) {
-                def parts = line.split('=', 2)
-
-                if (parts.length == 2) {
-                    environment parts[0].trim(), parts[1].trim()
-                }
-            }
-        }
-    }
+    systemProperty 'spring.profiles.active', 'test'
 }
 
 jacocoTestReport {
@@ -101,4 +86,6 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.boot:spring-boot-starter-flyway-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    testRuntimeOnly 'com.h2database:h2'
+    testImplementation 'org.springframework.security:spring-security-test'
 }
