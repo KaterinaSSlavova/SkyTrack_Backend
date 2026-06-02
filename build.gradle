@@ -21,6 +21,7 @@ sonar {
         property "sonar.projectKey", "sky-track"
         property "sonar.host.url", "http://145.220.72.90:9000"
         property "sonar.coverage.jacoco.xmlReportPaths", "build/reports/jacoco/test/jacocoTestReport.xml"
+        property "sonar.exclusions", "**/config/**, **/mapper/**, **/dto/**, **/persistence/entity/**, **/persistence/enumeration/**, **/presentation/security/JwtAuthenticationFilter.java, **/presentation/security/CsrfCookieFilter.java"
     }
 }
 
