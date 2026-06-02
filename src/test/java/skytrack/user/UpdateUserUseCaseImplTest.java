@@ -9,6 +9,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
+import skytrack.business.exception.user.UserTooOldException;
+import skytrack.business.exception.user.UserTooYoungException;
 import skytrack.business.impl.user.UpdateUserUseCaseImpl;
 import skytrack.dto.user.UpdateUserRequest;
 import skytrack.dto.user.UserResponse;
@@ -65,5 +67,33 @@ public class UpdateUserUseCaseImplTest {
         assertEquals("old@gmail.com", user.getEmail());
         assertEquals("old-picture", user.getPicture());
         assertEquals(LocalDate.of(2000, 1, 1), user.getBirthdate());
+    }
+
+    @Test
+    void updateUser_shouldThrowUserTooYoungException_whenAgeIsUnder16() {
+        UserEntity user = new UserEntity(1L, "pic", "First", "Last",
+                LocalDate.of(2000, 1, 1), "old@gmail.com", "hash",
+                new RoleEntity(1L, Role.PASSENGER));
+
+        UpdateUserRequest request = new UpdateUserRequest(null, null, null, null,
+                LocalDate.now().minusYears(15));
+
+        when(userRepository.findByEmail("old@gmail.com")).thenReturn(Optional.of(user));
+
+        assertThrows(UserTooYoungException.class, () -> updateUserUseCaseImpl.updateUser(request));
+    }
+
+    @Test
+    void updateUser_shouldThrowUserTooOldException_whenAgeIsOver120() {
+        UserEntity user = new UserEntity(1L, "pic", "First", "Last",
+                LocalDate.of(2000, 1, 1), "old@gmail.com", "hash",
+                new RoleEntity(1L, Role.PASSENGER));
+
+        UpdateUserRequest request = new UpdateUserRequest(null, null, null, null,
+                LocalDate.now().minusYears(121));
+
+        when(userRepository.findByEmail("old@gmail.com")).thenReturn(Optional.of(user));
+
+        assertThrows(UserTooOldException.class, () -> updateUserUseCaseImpl.updateUser(request));
     }
 }
