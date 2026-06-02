@@ -8,6 +8,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import skytrack.business.exception.flight.FlightNotFoundException;
 import skytrack.business.exception.seat.SeatNotAvailableException;
 import skytrack.business.exception.seat.SeatNotFoundException;
+import skytrack.business.exception.user.InvalidPassportException;
 import skytrack.business.impl.booking.CreateBookingUseCaseImpl;
 import skytrack.business.mapper.BookingMapper;
 import skytrack.business.mapper.PassengerMapper;
@@ -34,7 +35,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-
 
 @ExtendWith(MockitoExtension.class)
 public class CreateBookingUseCaseImplTest {
@@ -201,5 +201,24 @@ public class CreateBookingUseCaseImplTest {
         // assert
         verify(priceCalculationService).calculate(seat, flight.getPrice());
         assertNotNull(result);
+    }
+
+    @Test
+    void createBooking_shouldThrowInvalidPassportException_whenPassportExpiresTooSoon() {
+        SeatEntity seat = new SeatEntity(1L, "A1", false, false, false);
+        DuffelFlightEntity flight = new DuffelFlightEntity();
+        flight.setPrice(new BigDecimal("100"));
+
+        when(timeConverter.convertToUTC(any(), any())).thenReturn(Instant.now());
+        when(duffelRepository.findByFlightNumberAndDepartureTime(any(), any())).thenReturn(Optional.of(flight));
+        when(seatRepository.findById(any())).thenReturn(Optional.of(seat));
+        when(bookingRepository.existsByExternalFlight_IdAndSeat_Id(any(), any())).thenReturn(false);
+        when(priceCalculationService.calculate(any(), any())).thenReturn(new BigDecimal("100"));
+        when(userService.getLoggedUser()).thenReturn(new UserEntity());
+
+        CreateBookingRequest request = buildRequest();
+        request.getPassenger().setPassportExpiry(LocalDate.now().plusMonths(3));
+
+        assertThrows(InvalidPassportException.class, () -> createBooking.toResponse(request));
     }
 }
