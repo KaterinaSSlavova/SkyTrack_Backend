@@ -12,6 +12,6 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class SeatMapResponse {
-    private Long flight_id;
+    private Long flightId;
     private List<SeatResponse> seats;
 }

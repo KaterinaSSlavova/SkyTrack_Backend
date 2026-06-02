@@ -39,6 +39,6 @@ public class GetSeatMapUseCaseImpl implements GetSeatMapUseCase {
                 .map(seat -> seatMapper.toResponse(seat, !bookedSeatIds.contains(seat.getId())))
                 .toList();
 
-        return SeatMapResponse.builder().flight_id(flightId).seats(seats).build();
+        return SeatMapResponse.builder().flightId(flightId).seats(seats).build();
     }
 }
