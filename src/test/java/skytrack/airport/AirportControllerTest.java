@@ -1,209 +1,212 @@
 package skytrack.airport;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
-import org.springframework.cache.CacheManager;
-import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-import skytrack.business.service.JwtService;
-import skytrack.business.useCase.airport.*;
-import skytrack.dto.airport.AirportResponse;
-import skytrack.dto.airport.CreateAirportRequest;
-import skytrack.dto.airport.GetAllAirports;
-import skytrack.dto.airport.UpdateAirportRequest;
-import skytrack.presentation.controller.AirportController;
-import skytrack.presentation.security.JwtAuthenticationFilter;
+import org.springframework.transaction.annotation.Transactional;
+import skytrack.persistence.entity.AirportEntity;
+import skytrack.persistence.repo.AirportRepository;
 
-import java.util.List;
-
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
-import static org.springframework.http.MediaType.APPLICATION_JSON;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 
-@WebMvcTest(AirportController.class)
-class AirportControllerTest {
+@SpringBootTest
+@AutoConfigureMockMvc
+@Transactional
+public class AirportControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
 
-    @MockitoBean
-    private CacheManager cacheManager;
-
-    private final ObjectMapper objectMapper = new ObjectMapper();
-
-    @MockitoBean
-    private JwtAuthenticationFilter jwtAuthenticationFilter;
-
-    @MockitoBean
-    private JwtService jwtService;
-
-    @MockitoBean
-    private GetAllAirportsUseCase getAllAirportsUseCase;
-
-    @MockitoBean
-    private GetAirportUseCase getAirportUseCase;
-
-    @MockitoBean
-    private CreateAirportUseCase createAirportUseCase;
-
-    @MockitoBean
-    private UpdateAirportUseCase updateAirportUseCase;
-
-    @MockitoBean
-    private ArchiveAirportUseCase archiveAirportUseCase;
-
-    @MockitoBean
-    private SearchAirportUseCase searchAirportUseCase;
-
-    @BeforeEach
-    void setupFilter() throws Exception {
-        doAnswer(invocation -> {
-            jakarta.servlet.FilterChain chain = invocation.getArgument(2);
-            chain.doFilter(invocation.getArgument(0), invocation.getArgument(1));
-            return null;
-        }).when(jwtAuthenticationFilter).doFilter(any(), any(), any());
-    }
+    @Autowired
+    private AirportRepository airportRepository;
 
     @Test
-    @WithMockUser
-    void getAllAirports_shouldReturn200() throws Exception {
-        AirportResponse airport = AirportResponse.builder()
-                .id(1L)
-                .iataCode("AMS")
-                .name("Amsterdam Airport")
-                .city("Amsterdam")
-                .country("Netherlands")
-                .timezone("Europe/Amsterdam")
-                .build();
-
-        GetAllAirports response = GetAllAirports.builder()
-                .airports(List.of(airport))
-                .build();
-
-        when(getAllAirportsUseCase.getAllAirports()).thenReturn(response);
-
-        mockMvc.perform(get("/airports"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.airports[0].id").value(1))
-                .andExpect(jsonPath("$.airports[0].iataCode").value("AMS"))
-                .andExpect(jsonPath("$.airports[0].name").value("Amsterdam Airport"));
-
-        verify(getAllAirportsUseCase).getAllAirports();
-    }
-
-    @Test
-    @WithMockUser
-    void getAirportById_shouldReturn200() throws Exception {
-        AirportResponse response = AirportResponse.builder()
-                .id(1L)
-                .iataCode("AMS")
-                .name("Amsterdam Airport")
-                .city("Amsterdam")
-                .country("Netherlands")
-                .timezone("Europe/Amsterdam")
-                .build();
-
-        when(getAirportUseCase.getAirportById(1L)).thenReturn(response);
-
-        mockMvc.perform(get("/airports/1"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(1))
-                .andExpect(jsonPath("$.iataCode").value("AMS"))
-                .andExpect(jsonPath("$.city").value("Amsterdam"));
-
-        verify(getAirportUseCase).getAirportById(1L);
-    }
-
-    @Test
-    @WithMockUser
-    void createAirport_shouldReturn201() throws Exception {
-        CreateAirportRequest request = new CreateAirportRequest(
-                "AMS",
-                "Amsterdam Airport",
-                "Amsterdam",
-                "Netherlands",
-                "Europe/Amsterdam"
-        );
-
-        AirportResponse response = AirportResponse.builder()
-                .id(1L)
-                .iataCode("AMS")
-                .name("Amsterdam Airport")
-                .city("Amsterdam")
-                .country("Netherlands")
-                .timezone("Europe/Amsterdam")
-                .build();
-
-        when(createAirportUseCase.createAirport(any(CreateAirportRequest.class))).thenReturn(response);
+    void createAirport_shouldReturnCreated() throws Exception{
+        String body= """
+                {
+                   "iataCode": "TST",
+                    "name": "Test Airport",
+                    "city": "Test City",
+                    "country": "Test Country",
+                    "timezone": "Europe/Amsterdam"
+                }
+                """;
 
         mockMvc.perform(post("/airports")
-                        .contentType(APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
+                        .with(user("admin@test.com").roles("ADMIN"))
+                        .with(csrf()).contentType(MediaType.APPLICATION_JSON).content(body))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.id").value(1))
-                .andExpect(jsonPath("$.iataCode").value("AMS"))
-                .andExpect(jsonPath("$.name").value("Amsterdam Airport"));
-
-        verify(createAirportUseCase).createAirport(any(CreateAirportRequest.class));
+                .andExpect(jsonPath("$.iataCode").value("TST"))
+                .andExpect(jsonPath("$.name").value("Test Airport"))
+                .andExpect(jsonPath("$.city").value("Test City"))
+                .andExpect(jsonPath("$.country").value("Test Country"))
+                .andExpect(jsonPath("$.timezone").value("Europe/Amsterdam"));
     }
 
     @Test
-    @WithMockUser
-    void updateAirport_shouldReturn204() throws Exception {
-        UpdateAirportRequest request = new UpdateAirportRequest(
-                null,
-                "AMS",
-                "Amsterdam Airport",
-                "Amsterdam",
-                "Netherlands",
-                "Europe/Amsterdam"
-        );
+    void createAirport_withPassenger_shouldReturnForbidden() throws Exception {
+        String body= """
+                {
+                   "iataCode": "TST",
+                    "name": "Test Airport",
+                    "city": "Test City",
+                    "country": "Test Country",
+                    "timezone": "Europe/Amsterdam"
+                }
+                """;
 
-        mockMvc.perform(put("/airports/1")
-                        .contentType(APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
+        mockMvc.perform(post("/airports")
+                .with(user("passenger@test.com").roles("PASSENGER"))
+                .with(csrf()).contentType(MediaType.APPLICATION_JSON).content(body))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void createAirport_withInvalidData_shouldReturnBadRequest() throws Exception{
+        String body= """
+                {
+                   "iataCode": "",
+                    "name": "",
+                    "city": "",
+                    "country": "",
+                    "timezone": ""
+                }
+                """;
+        mockMvc.perform(post("/airports").with(user("admin@test.com").roles("ADMIN"))
+                .with(csrf()).contentType(MediaType.APPLICATION_JSON).content(body))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void getAllAirports_withPassenger_shouldReturnOk() throws Exception{
+         mockMvc.perform(get("/airports").with(user("passenger@test.com").roles("PASSENGER"))
+                 .with(csrf())).andExpect(status().isOk());
+    }
+
+    @Test
+    void getAllAirports_withAdmin_shouldReturnOk() throws Exception{
+        mockMvc.perform(get("/airports").with(user("admin@test.com").roles("ADMIN"))
+                .with(csrf())).andExpect(status().isOk());
+    }
+
+    @Test
+    void getAirportById_whenAirportExists_shouldReturnAirport() throws Exception{
+        AirportEntity airport =  airportRepository.save(createAirport());
+
+        mockMvc.perform(get("/airports/"+ airport.getId())
+                .with(user("passenger@test.com").roles("PASSENGER"))
+                .with(csrf())).andExpect(status().isOk())
+                .andExpect(jsonPath("$.iataCode").value("TST"))
+                .andExpect(jsonPath("$.name").value("Test Airport"))
+                .andExpect(jsonPath("$.city").value("Test City"))
+                .andExpect(jsonPath("$.country").value("Test Country"))
+                .andExpect(jsonPath("$.timezone").value("Europe/Amsterdam"));;
+    }
+
+    @Test
+    void getAirportById_whenIdDoesNotExist_shouldReturnNotFound() throws Exception{
+        mockMvc.perform(get("/airports/666666666")
+                .with(user("passenger@test.com").roles("PASSENGER"))
+                .with(csrf())).andExpect(status().isNotFound());
+    }
+
+    @Test
+    void updateAirport_withAdmin_shouldReturnNoContent() throws Exception {
+        AirportEntity airport = airportRepository.save(createAirport());
+
+        String body = """
+            {
+              "iataCode": "UPD",
+              "name": "Updated Airport",
+              "city": "Updated City",
+              "country": "Updated Country",
+              "timezone": "Europe/Amsterdam"
+            }
+            """;
+
+        mockMvc.perform(put("/airports/" + airport.getId())
+                        .with(user("admin@test.com").roles("ADMIN"))
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
                 .andExpect(status().isNoContent());
-
-        verify(updateAirportUseCase).updateAirport(argThat(updatedRequest ->
-                updatedRequest.getId().equals(1L)
-        ));
     }
 
     @Test
-    @WithMockUser
-    void archiveAirport_shouldReturn204() throws Exception {
-        mockMvc.perform(patch("/airports/1"))
+    void updateAirport_withPassenger_shouldReturnForbidden() throws Exception {
+        AirportEntity airport = airportRepository.save(createAirport());
+
+        String body = """
+            {
+              "iataCode": "UPD",
+              "name": "Updated Airport",
+              "city": "Updated City",
+              "country": "Updated Country",
+              "timezone": "Europe/Amsterdam"
+            }
+            """;
+
+        mockMvc.perform(put("/airports/" + airport.getId())
+                        .with(user("passenger@test.com").roles("PASSENGER"))
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void archiveAirport_withAdmin_shouldReturnNoContent() throws Exception {
+        AirportEntity airport = airportRepository.save(createAirport());
+
+        mockMvc.perform(patch("/airports/" + airport.getId())
+                        .with(user("admin@test.com").roles("ADMIN"))
+                        .with(csrf()))
                 .andExpect(status().isNoContent());
-
-        verify(archiveAirportUseCase).archiveAirport(1L);
     }
 
     @Test
-    @WithMockUser
-    void searchAirports_shouldReturn200() throws Exception {
-        AirportResponse response = AirportResponse.builder()
-                .id(1L)
-                .iataCode("AMS")
-                .name("Amsterdam Airport")
-                .city("Amsterdam")
-                .country("Netherlands")
-                .timezone("Europe/Amsterdam")
-                .build();
+    void archiveAirport_withPassenger_shouldReturnForbidden() throws Exception {
+        AirportEntity airport = airportRepository.save(createAirport());
 
-        when(searchAirportUseCase.searchAirport("ams")).thenReturn(List.of(response));
+        mockMvc.perform(patch("/airports/" + airport.getId())
+                        .with(user("passenger@test.com").roles("PASSENGER"))
+                        .with(csrf()))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void searchAirports_withPassenger_shouldReturnMatchingAirports() throws Exception {
+        airportRepository.save(createAirport());
 
         mockMvc.perform(get("/airports/search")
-                        .param("input", "ams"))
+                        .param("input", "Test")
+                        .with(user("passenger@test.com").roles("PASSENGER")))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].id").value(1))
-                .andExpect(jsonPath("$[0].iataCode").value("AMS"));
+                .andExpect(jsonPath("$[0].iataCode").value("TST"));
+    }
 
-        verify(searchAirportUseCase).searchAirport("ams");
+    @Test
+    void searchAirports_withAdmin_shouldReturnForbidden() throws Exception {
+        mockMvc.perform(get("/airports/search")
+                        .param("input", "Test")
+                        .with(user("admin@test.com").roles("ADMIN")))
+                .andExpect(status().isForbidden());
+    }
+
+    private AirportEntity createAirport() {
+        return AirportEntity.builder()
+                .iataCode("TST")
+                .name("Test Airport")
+                .city("Test City")
+                .country("Test Country")
+                .timezone("Europe/Amsterdam")
+                .build();
     }
 }

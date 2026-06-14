@@ -1,85 +1,131 @@
 package skytrack.seat;
 
-import org.junit.jupiter.api.BeforeEach;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
-import org.springframework.cache.CacheManager;
-import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.test.web.servlet.MockMvc;
-import skytrack.business.service.JwtService;
-import skytrack.business.useCase.seat.GetSeatMapUseCase;
-import skytrack.business.useCase.seat.GetSeatUseCase;
-import skytrack.dto.seat.SeatMapResponse;
-import skytrack.dto.seat.SeatResponse;
-import skytrack.presentation.controller.SeatController;
-import skytrack.presentation.security.JwtAuthenticationFilter;
+import org.springframework.transaction.annotation.Transactional;
+import skytrack.persistence.entity.*;
+import skytrack.persistence.enumeration.FlightStatus;
+import skytrack.persistence.enumeration.Role;
+import skytrack.persistence.repo.*;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import java.math.BigDecimal;
+import java.time.Instant;
 
-@WebMvcTest(SeatController.class)
-class SeatControllerTest {
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+@SpringBootTest
+@AutoConfigureMockMvc
+@Transactional
+public class SeatControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
-    @MockitoBean
-    private CacheManager cacheManager;
+    @Autowired
+    private SeatRepository seatRepository;
 
-    @MockitoBean
-    private JwtAuthenticationFilter jwtAuthenticationFilter;
+    @Autowired
+    private DuffelRepository duffelRepository;
 
-    @MockitoBean
-    private JwtService jwtService;
+    @Autowired
+    private AirportRepository airportRepository;
 
-    @MockitoBean
-    private GetSeatUseCase getSeatUseCase;
+    @Autowired
+    private UserRepository userRepository;
 
-    @MockitoBean
-    private GetSeatMapUseCase getSeatMapUseCase;
+    @Autowired
+    private RoleRepository roleRepository;
 
-    @BeforeEach
-    void setupFilter() throws Exception {
-        doAnswer(invocation -> {
-            jakarta.servlet.FilterChain chain = invocation.getArgument(2);
-            chain.doFilter(invocation.getArgument(0), invocation.getArgument(1));
-            return null;
-        }).when(jwtAuthenticationFilter).doFilter(any(), any(), any());
+    @Test
+    void getSeat_whenSeatExists_shouldReturnSeat() throws Exception {
+        createPassenger();
+        DuffelFlightEntity flight = createFlight();
+        SeatEntity seat = seatRepository.findAll().get(0);
+
+        mockMvc.perform(get("/seats/" + seat.getId() + "/flight/" + flight.getId())
+                        .with(user("passenger@test.com").roles("PASSENGER")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(seat.getId()))
+                .andExpect(jsonPath("$.seatNumber").value(seat.getSeatNumber()));
     }
 
     @Test
-    @WithMockUser
-    void getSeat_shouldReturn200() throws Exception {
-        SeatResponse response = SeatResponse.builder()
-                .id(1L)
-                .build();
-
-        when(getSeatUseCase.getSeat(1L, 2L)).thenReturn(response);
-
-        mockMvc.perform(get("/seats/1/flight/2"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(1));
-
-        verify(getSeatUseCase).getSeat(1L, 2L);
+    void getSeat_whenSeatDoesNotExist_shouldReturnNotFound() throws Exception {
+        mockMvc.perform(get("/seats/666666666/flight/1")
+                        .with(user("passenger@test.com").roles("PASSENGER")))
+                .andExpect(status().isNotFound());
     }
 
     @Test
-    @WithMockUser
-    void getSeatMap_shouldReturn200() throws Exception {
-        SeatMapResponse response = SeatMapResponse.builder()
-                .flightId(1L)
-                .build();
+    void getSeatMap_whenFlightIdExists_shouldReturnSeatMap() throws Exception {
+        createPassenger();
+        DuffelFlightEntity flight = createFlight();
 
-        when(getSeatMapUseCase.getSeatMap(1L)).thenReturn(response);
+        mockMvc.perform(get("/seats/" + flight.getId())
+                        .with(user("passenger@test.com").roles("PASSENGER")))
+                .andExpect(status().isOk());
+    }
 
-        mockMvc.perform(get("/seats/1"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.flightId").value(1));
+    @Test
+    void getSeatMap_whenFlightIdDoesNotExist_shouldReturnNotFound() throws Exception {
+        mockMvc.perform(get("/seats/666666666")
+                        .with(user("passenger@test.com").roles("PASSENGER")))
+                .andExpect(status().isNotFound());
+    }
 
-        verify(getSeatMapUseCase).getSeatMap(1L);
+    private UserEntity createPassenger() {
+        RoleEntity role = roleRepository.save(
+                RoleEntity.builder()
+                        .roleName(Role.PASSENGER)
+                        .build()
+        );
+
+        return userRepository.save(
+                UserEntity.builder()
+                        .firstName("Test")
+                        .lastName("Passenger")
+                        .email("passenger@test.com")
+                        .passwordHash("password")
+                        .role(role)
+                        .build()
+        );
+    }
+
+    private DuffelFlightEntity createFlight() {
+        AirportEntity departureAirport = airportRepository.save(
+                AirportEntity.builder()
+                        .iataCode("TST")
+                        .name("Test Departure Airport")
+                        .city("Test City")
+                        .country("Test Country")
+                        .timezone("Europe/Amsterdam")
+                        .build());
+
+        AirportEntity arrivalAirport = airportRepository.save(
+                AirportEntity.builder()
+                        .iataCode("UPD")
+                        .name("Test Arrival Airport")
+                        .city("Updated City")
+                        .country("Updated Country")
+                        .timezone("Europe/Amsterdam")
+                        .build());
+
+        return duffelRepository.save(
+                DuffelFlightEntity.builder()
+                        .flightNumber("ST123")
+                        .departureAirport(departureAirport)
+                        .arrivalAirport(arrivalAirport)
+                        .departureTime(Instant.now().plusSeconds(3600))
+                        .arrivalTime(Instant.now().plusSeconds(7200))
+                        .gate("A1")
+                        .price(new BigDecimal("100.00"))
+                        .status(FlightStatus.SCHEDULED)
+                        .build());
     }
 }

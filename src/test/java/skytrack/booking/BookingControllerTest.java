@@ -1,236 +1,233 @@
 package skytrack.booking;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
-import org.springframework.cache.CacheManager;
-import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-import skytrack.business.service.JwtService;
-import skytrack.business.service.QrGenerator;
-import skytrack.business.useCase.booking.*;
-import skytrack.business.useCase.statistics.GetNextFlightUseCase;
-import skytrack.business.useCase.statistics.GetStatisticsUseCase;
-import skytrack.dto.booking.BookingResponse;
-import skytrack.dto.booking.BookingStatsResponse;
-import skytrack.dto.booking.CreateBookingRequest;
-import skytrack.presentation.controller.BookingController;
-import skytrack.presentation.security.JwtAuthenticationFilter;
+import org.springframework.transaction.annotation.Transactional;
+import skytrack.persistence.entity.*;
+import skytrack.persistence.enumeration.Role;
+import skytrack.persistence.repo.*;
 
-import java.util.List;
+import java.math.BigDecimal;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
-import static org.springframework.http.MediaType.APPLICATION_JSON;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@WebMvcTest(BookingController.class)
-class BookingControllerTest {
-
+@SpringBootTest
+@AutoConfigureMockMvc
+@Transactional
+public class BookingControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
-    @MockitoBean
-    private CacheManager cacheManager;
+    @Autowired
+    private UserRepository userRepository;
 
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    @Autowired
+    private RoleRepository roleRepository;
 
-    @MockitoBean
-    private JwtAuthenticationFilter jwtAuthenticationFilter;
+    @Autowired
+    private BookingRepository bookingRepository;
 
-    @MockitoBean
-    private JwtService jwtService;
+    @Autowired
+    private SeatRepository seatRepository;
 
-    @MockitoBean
-    private QrGenerator qrGenerator;
+    @Autowired
+    private DuffelRepository duffelFlightRepository;
 
-    @MockitoBean
-    private CreateBookingUseCase createBookingUseCase;
+    @Test
+    void getAllBookings_withPassenger_shouldReturnOk() throws Exception {
+        createPassenger();
 
-    @MockitoBean
-    private GetAllBookingsUseCase getAllBookingsUseCase;
-
-    @MockitoBean
-    private GetBookingUseCase getBookingUseCase;
-
-    @MockitoBean
-    private CancelBookingUseCase cancelBookingUseCase;
-
-    @MockitoBean
-    private GetBookingByReferenceUseCase getBookingByReferenceUseCase;
-
-    @MockitoBean
-    private GetStatisticsUseCase getStatisticsUseCase;
-
-    @MockitoBean
-    private GetNextFlightUseCase getNextFlightUseCase;
-
-    @BeforeEach
-    void setupFilter() throws Exception {
-        doAnswer(invocation -> {
-            jakarta.servlet.FilterChain chain = invocation.getArgument(2);
-            chain.doFilter(invocation.getArgument(0), invocation.getArgument(1));
-            return null;
-        }).when(jwtAuthenticationFilter).doFilter(any(), any(), any());
+        mockMvc.perform(get("/bookings")
+                        .with(user("passenger@test.com").roles("PASSENGER")))
+                .andExpect(status().isOk());
     }
 
     @Test
-    @WithMockUser
-    void getQRCode_shouldReturn200() throws Exception {
-        byte[] qrBytes = new byte[]{1, 2, 3};
-        when(qrGenerator.generate("ABC123")).thenReturn(qrBytes);
+    void getAllBookings_withAdmin_shouldReturnOk() throws Exception {
+        createAdmin();
 
-        mockMvc.perform(get("/bookings/ABC123/qr"))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType("image/png"));
-
-        verify(qrGenerator).generate("ABC123");
+        mockMvc.perform(get("/bookings")
+                        .with(user("admin@test.com").roles("ADMIN")))
+                .andExpect(status().isOk());
     }
 
     @Test
-    @WithMockUser
-    void verifyBooking_shouldReturn200() throws Exception {
-        BookingResponse response = BookingResponse.builder()
-                .id(1L)
-                .bookingReference("ABC123")
-                .build();
+    void getBooking_whenIdDoesNotExist_shouldReturnNotFound() throws Exception {
+        createPassenger();
 
-        when(getBookingByReferenceUseCase.getBookingByReference("ABC123")).thenReturn(response);
-
-        mockMvc.perform(get("/bookings/verify/ABC123"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(1))
-                .andExpect(jsonPath("$.bookingReference").value("ABC123"));
-
-        verify(getBookingByReferenceUseCase).getBookingByReference("ABC123");
+        mockMvc.perform(get("/bookings/666666666")
+                        .with(user("passenger@test.com").roles("PASSENGER")))
+                .andExpect(status().isNotFound());
     }
 
     @Test
-    @WithMockUser
-    void getAllBookings_shouldReturn200() throws Exception {
-        BookingResponse booking = BookingResponse.builder()
-                .id(1L)
-                .bookingReference("ABC123")
-                .build();
+    void createBooking_withAdmin_shouldReturnForbidden() throws Exception {
+        createAdmin();
 
-        when(getAllBookingsUseCase.getAllBookings()).thenReturn(List.of(booking));
-
-        mockMvc.perform(get("/bookings"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].id").value(1))
-                .andExpect(jsonPath("$[0].bookingReference").value("ABC123"));
-
-        verify(getAllBookingsUseCase).getAllBookings();
-    }
-
-    @Test
-    @WithMockUser
-    void getAllBookings_empty_shouldReturn200WithEmptyList() throws Exception {
-        when(getAllBookingsUseCase.getAllBookings()).thenReturn(List.of());
-
-        mockMvc.perform(get("/bookings"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$").isEmpty());
-
-        verify(getAllBookingsUseCase).getAllBookings();
-    }
-
-    @Test
-    @WithMockUser
-    void getBookingById_shouldReturn200() throws Exception {
-        BookingResponse response = BookingResponse.builder()
-                .id(1L)
-                .bookingReference("ABC123")
-                .build();
-
-        when(getBookingUseCase.getBooking(1L)).thenReturn(response);
-
-        mockMvc.perform(get("/bookings/1"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(1))
-                .andExpect(jsonPath("$.bookingReference").value("ABC123"));
-
-        verify(getBookingUseCase).getBooking(1L);
-    }
-
-    @Test
-    @WithMockUser
-    void createBooking_shouldReturn201() throws Exception {
-        CreateBookingRequest request = new CreateBookingRequest();
-        request.setSeatId(1L);
-
-        BookingResponse response = BookingResponse.builder()
-                .id(1L)
-                .bookingReference("ABC123")
-                .build();
-
-        when(createBookingUseCase.toResponse(any(CreateBookingRequest.class))).thenReturn(response);
+        String body = """
+                {
+                  "passenger": null,
+                  "flight": null,
+                  "seatId": 1
+                }
+                """;
 
         mockMvc.perform(post("/bookings")
-                        .contentType(APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.id").value(1))
-                .andExpect(jsonPath("$.bookingReference").value("ABC123"));
-
-        verify(createBookingUseCase).toResponse(any(CreateBookingRequest.class));
+                        .with(user("admin@test.com").roles("ADMIN"))
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isForbidden());
     }
 
     @Test
-    @WithMockUser
-    void cancelBooking_shouldReturn204() throws Exception {
-        mockMvc.perform(patch("/bookings/1/cancel"))
+    void cancelBooking_whenBookingExists_shouldReturnNoContent() throws Exception {
+        BookingEntity booking = createBookingForPassenger();
+
+        mockMvc.perform(patch("/bookings/" + booking.getId() + "/cancel")
+                        .with(user("passenger@test.com").roles("PASSENGER"))
+                        .with(csrf()))
                 .andExpect(status().isNoContent());
-
-        verify(cancelBookingUseCase).cancelBooking(1L);
     }
 
     @Test
-    @WithMockUser
-    void getNextFlight_withUpcoming_shouldReturn200() throws Exception {
-        BookingResponse response = BookingResponse.builder()
-                .id(1L)
-                .bookingReference("ABC123")
-                .build();
+    void cancelBooking_withAdmin_shouldReturnForbidden() throws Exception {
+        createAdmin();
 
-        when(getNextFlightUseCase.getNextFlight()).thenReturn(response);
+        mockMvc.perform(patch("/bookings/1/cancel")
+                        .with(user("admin@test.com").roles("ADMIN"))
+                        .with(csrf()))
+                .andExpect(status().isForbidden());
+    }
 
-        mockMvc.perform(get("/bookings/upcoming"))
+    @Test
+    void cancelBooking_whenBookingDoesNotExist_shouldReturnNotFound() throws Exception {
+        createPassenger();
+
+        mockMvc.perform(patch("/bookings/666666666/cancel")
+                        .with(user("passenger@test.com").roles("PASSENGER"))
+                        .with(csrf()))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void getQRCode_withPassenger_shouldReturnPng() throws Exception {
+        createPassenger();
+
+        mockMvc.perform(get("/bookings/TEST-REF/qr")
+                        .with(user("passenger@test.com").roles("PASSENGER")))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(1))
-                .andExpect(jsonPath("$.bookingReference").value("ABC123"));
-
-        verify(getNextFlightUseCase).getNextFlight();
+                .andExpect(content().contentType(MediaType.IMAGE_PNG));
     }
 
     @Test
-    @WithMockUser
-    void getNextFlight_noUpcoming_shouldReturn204() throws Exception {
-        when(getNextFlightUseCase.getNextFlight()).thenReturn(null);
-
-        mockMvc.perform(get("/bookings/upcoming"))
-                .andExpect(status().isNoContent());
-
-        verify(getNextFlightUseCase).getNextFlight();
+    void getQRCode_withoutUser_shouldReturnUnauthorized() throws Exception {
+        mockMvc.perform(get("/bookings/TEST-REF/qr"))
+                .andExpect(status().isUnauthorized());
     }
 
     @Test
-    @WithMockUser
-    void getStatistics_shouldReturn200() throws Exception {
-        BookingStatsResponse stats = BookingStatsResponse.builder()
-                .totalFlights(5)
-                .build();
+    void getUpcoming_withPassenger_shouldReturnOkOrNoContent() throws Exception {
+        createPassenger();
 
-        when(getStatisticsUseCase.getStatistics()).thenReturn(stats);
+        mockMvc.perform(get("/bookings/upcoming")
+                        .with(user("passenger@test.com").roles("PASSENGER")))
+                .andExpect(status().is2xxSuccessful());
+    }
 
-        mockMvc.perform(get("/bookings/statistics"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.totalFlights").value(5));
+    @Test
+    void getUpcoming_withAdmin_shouldReturnForbidden() throws Exception {
+        createAdmin();
 
-        verify(getStatisticsUseCase).getStatistics();
+        mockMvc.perform(get("/bookings/upcoming")
+                        .with(user("admin@test.com").roles("ADMIN")))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void getStatistics_withPassenger_shouldReturnOk() throws Exception {
+        createPassenger();
+
+        mockMvc.perform(get("/bookings/statistics")
+                        .with(user("passenger@test.com").roles("PASSENGER")))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void getStatistics_withAdmin_shouldReturnForbidden() throws Exception {
+        createAdmin();
+
+        mockMvc.perform(get("/bookings/statistics")
+                        .with(user("admin@test.com").roles("ADMIN")))
+                .andExpect(status().isForbidden());
+    }
+
+    private UserEntity createPassenger() {
+        RoleEntity role = roleRepository.save(RoleEntity.builder().roleName(Role.PASSENGER).build());
+
+        return userRepository.save(
+                UserEntity.builder()
+                        .firstName("Test")
+                        .lastName("Passenger")
+                        .email("passenger@test.com")
+                        .passwordHash("password")
+                        .role(role)
+                        .build());
+    }
+
+    private UserEntity createAdmin() {
+        RoleEntity role = roleRepository.save(RoleEntity.builder().roleName(Role.ADMIN).build());
+
+        return userRepository.save(
+                UserEntity.builder()
+                        .firstName("Test")
+                        .lastName("Admin")
+                        .email("admin@test.com")
+                        .passwordHash("password")
+                        .role(role)
+                        .build());
+    }
+
+    private BookingEntity createBookingForPassenger() {
+        UserEntity passengerUser = createPassenger();
+
+        SeatEntity seat = seatRepository.save(
+                SeatEntity.builder()
+                        .seatNumber("12A")
+                        .window(true)
+                        .aisle(false)
+                        .extraLegroom(false)
+                        .build());
+
+        DuffelFlightEntity flight = duffelFlightRepository.save(
+                DuffelFlightEntity.builder()
+                        .externalId("test-flight-id")
+                        .flightNumber("ST123")
+                        .departureIataCode("TST")
+                        .arrivalIataCode("UPD")
+                        .departureTimezone("Europe/Amsterdam")
+                        .arrivalTimezone("Europe/Amsterdam")
+                        .price(new BigDecimal("100.00"))
+                        .currency("EUR")
+                        .build());
+
+        return bookingRepository.save(
+                BookingEntity.builder()
+                        .user(passengerUser)
+                        .externalFlight(flight)
+                        .seat(seat)
+                        .basePrice(new BigDecimal("100.00"))
+                        .totalPrice(new BigDecimal("100.00"))
+                        .currency("EUR")
+                        .bookingReference("TEST-REF")
+                        .archived(false)
+                        .build());
     }
 }

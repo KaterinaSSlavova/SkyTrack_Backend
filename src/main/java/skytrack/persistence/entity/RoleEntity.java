@@ -6,6 +6,7 @@ import skytrack.persistence.enumeration.Role;
 
 @Getter
 @Setter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity

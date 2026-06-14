@@ -1,190 +1,232 @@
 package skytrack.flight;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
-import org.springframework.cache.CacheManager;
-import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-import skytrack.business.service.JwtService;
-import skytrack.business.useCase.flight.*;
-import skytrack.dto.duffel.DuffelFlightResponse;
-import skytrack.dto.duffel.SavedFlightResponse;
+import org.springframework.transaction.annotation.Transactional;
+import skytrack.persistence.entity.*;
 import skytrack.persistence.enumeration.FlightStatus;
-import skytrack.presentation.controller.FlightController;
-import skytrack.presentation.security.JwtAuthenticationFilter;
+import skytrack.persistence.enumeration.Role;
+import skytrack.persistence.repo.*;
 
-import java.time.LocalDate;
-import java.util.List;
+import java.math.BigDecimal;
+import java.time.Instant;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.*;
-import static org.springframework.http.MediaType.APPLICATION_JSON;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@WebMvcTest(FlightController.class)
-class FlightControllerTest {
-
+@SpringBootTest
+@AutoConfigureMockMvc
+@Transactional
+public class FlightControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
-    @MockitoBean
-    private CacheManager cacheManager;
+    @Autowired
+    private DuffelRepository duffelRepository;
 
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    @Autowired
+    private AirportRepository airportRepository;
 
-    @MockitoBean
-    private JwtAuthenticationFilter jwtAuthenticationFilter;
+    @Autowired
+    private UserRepository userRepository;
 
-    @MockitoBean
-    private JwtService jwtService;
+    @Autowired
+    private RoleRepository roleRepository;
 
-    @MockitoBean
-    private SearchDuffelFlightUseCase searchDuffelFlightUseCase;
+    @Test
+    void getAllDuffelFlights_withAdmin_shouldReturnOk() throws Exception {
+        createAdmin();
 
-    @MockitoBean
-    private SaveDuffelUseCase saveDuffelUseCase;
-
-    @MockitoBean
-    private UpdateFlightStatusUseCase updateFlightStatusUseCase;
-
-    @MockitoBean
-    private UpdateFlightGateUseCase updateFlightGateUseCase;
-
-    @MockitoBean
-    private GetAllDuffelFlightsUseCase getAllDuffelFlightsUseCase;
-
-    @MockitoBean
-    private GetDuffelFlightUseCase getDuffelFlightUseCase;
-
-    @BeforeEach
-    void setupFilter() throws Exception {
-        doAnswer(invocation -> {
-            jakarta.servlet.FilterChain chain = invocation.getArgument(2);
-            chain.doFilter(invocation.getArgument(0), invocation.getArgument(1));
-            return null;
-        }).when(jwtAuthenticationFilter).doFilter(any(), any(), any());
+        mockMvc.perform(get("/flights/duffel")
+                        .with(user("admin@test.com").roles("ADMIN")))
+                .andExpect(status().isOk());
     }
 
     @Test
-    @WithMockUser
-    void searchFlights_shouldReturn200() throws Exception {
-        DuffelFlightResponse flight = DuffelFlightResponse.builder()
-                .externalId("dfl_123")
-                .build();
+    void getAllDuffelFlights_withPassenger_shouldReturnForbidden() throws Exception {
+        createPassenger();
 
-        when(searchDuffelFlightUseCase.searchFlights("AMS", "JFK", LocalDate.of(2026, 7, 1)))
-                .thenReturn(reactor.core.publisher.Mono.just(List.of(flight)));
+        mockMvc.perform(get("/flights/duffel")
+                        .with(user("passenger@test.com").roles("PASSENGER")))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void getDuffelFlightById_whenFlightExists_shouldReturnFlight() throws Exception {
+        createAdmin();
+        DuffelFlightEntity flight = createDuffelFlight();
+
+        mockMvc.perform(get("/flights/duffel/" + flight.getId())
+                        .with(user("admin@test.com").roles("ADMIN")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.flightNumber").value("ST123"))
+                .andExpect(jsonPath("$.currency").value("EUR"));
+    }
+
+    @Test
+    void getDuffelFlightById_whenFlightDoesNotExist_shouldReturnNotFound() throws Exception {
+        createAdmin();
+
+        mockMvc.perform(get("/flights/duffel/666666666")
+                        .with(user("admin@test.com").roles("ADMIN")))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void updateFlightGate_withAdmin_shouldReturnNoContent() throws Exception {
+        createAdmin();
+        DuffelFlightEntity flight = createDuffelFlight();
+
+        mockMvc.perform(patch("/flights/duffel/" + flight.getId() + "/gate")
+                        .param("gate", "B2")
+                        .with(user("admin@test.com").roles("ADMIN"))
+                        .with(csrf()))
+                .andExpect(status().isNoContent());
+    }
+
+    @Test
+    void updateFlightGate_withPassenger_shouldReturnForbidden() throws Exception {
+        createPassenger();
+        DuffelFlightEntity flight = createDuffelFlight();
+
+        mockMvc.perform(patch("/flights/duffel/" + flight.getId() + "/gate")
+                        .param("gate", "B2")
+                        .with(user("passenger@test.com").roles("PASSENGER"))
+                        .with(csrf()))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void updateFlightStatus_withAdmin_shouldReturnNoContent() throws Exception {
+        createAdmin();
+        DuffelFlightEntity flight = createDuffelFlight();
+
+        mockMvc.perform(patch("/flights/duffel/" + flight.getId() + "/status")
+                        .param("status", "DELAYED")
+                        .param("newDepTime", "2026-12-01T10:00:00")
+                        .with(user("admin@test.com").roles("ADMIN"))
+                        .with(csrf()))
+                .andExpect(status().isNoContent());
+    }
+
+    @Test
+    void updateFlightStatus_withPassenger_shouldReturnForbidden() throws Exception {
+        createPassenger();
+        DuffelFlightEntity flight = createDuffelFlight();
+
+        mockMvc.perform(patch("/flights/duffel/" + flight.getId() + "/status")
+                        .param("status", "DELAYED")
+                        .with(user("passenger@test.com").roles("PASSENGER"))
+                        .with(csrf()))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void duffelSearchFlights_withAdmin_shouldReturnForbidden() throws Exception {
+        createAdmin();
 
         mockMvc.perform(get("/flights/duffel/search")
-                        .param("departureIata", "AMS")
-                        .param("arrivalIata", "JFK")
-                        .param("departureDate", "2026-07-01"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].externalId").value("dfl_123"));
-
-        verify(searchDuffelFlightUseCase).searchFlights("AMS", "JFK", LocalDate.of(2026, 7, 1));
+                        .param("departureIata", "TST")
+                        .param("arrivalIata", "UPD")
+                        .param("departureDate", "2026-12-01")
+                        .with(user("admin@test.com").roles("ADMIN")))
+                .andExpect(status().isForbidden());
     }
 
     @Test
-    @WithMockUser
-    void saveFlight_shouldReturn201() throws Exception {
-        DuffelFlightResponse request = DuffelFlightResponse.builder()
-                .externalId("dfl_123")
-                .build();
+    void createFlight_withAdmin_shouldReturnForbidden() throws Exception {
+        createAdmin();
 
-        SavedFlightResponse response = SavedFlightResponse.builder()
-                .id(1L)
-                .build();
-
-        when(saveDuffelUseCase.saveFlight(any(DuffelFlightResponse.class))).thenReturn(response);
+        String body = "{}";
 
         mockMvc.perform(post("/flights/duffel/save")
-                        .contentType(APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.id").value(1));
-
-        verify(saveDuffelUseCase).saveFlight(any(DuffelFlightResponse.class));
+                        .with(user("admin@test.com").roles("ADMIN"))
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isForbidden());
     }
 
-    @Test
-    @WithMockUser
-    void getAllDuffelFlights_shouldReturn200() throws Exception {
-        SavedFlightResponse flight = SavedFlightResponse.builder()
-                .id(1L)
-                .build();
+    private UserEntity createPassenger() {
+        RoleEntity role = roleRepository.save(
+                RoleEntity.builder()
+                        .roleName(Role.PASSENGER)
+                        .build()
+        );
 
-        when(getAllDuffelFlightsUseCase.getAllDuffelFlights()).thenReturn(List.of(flight));
-
-        mockMvc.perform(get("/flights/duffel"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].id").value(1));
-
-        verify(getAllDuffelFlightsUseCase).getAllDuffelFlights();
+        return userRepository.save(
+                UserEntity.builder()
+                        .firstName("Test")
+                        .lastName("Passenger")
+                        .email("passenger@test.com")
+                        .passwordHash("password")
+                        .role(role)
+                        .build()
+        );
     }
 
-    @Test
-    @WithMockUser
-    void getAllDuffelFlights_empty_shouldReturn200WithEmptyList() throws Exception {
-        when(getAllDuffelFlightsUseCase.getAllDuffelFlights()).thenReturn(List.of());
+    private UserEntity createAdmin() {
+        RoleEntity role = roleRepository.save(
+                RoleEntity.builder()
+                        .roleName(Role.ADMIN)
+                        .build()
+        );
 
-        mockMvc.perform(get("/flights/duffel"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$").isEmpty());
-
-        verify(getAllDuffelFlightsUseCase).getAllDuffelFlights();
+        return userRepository.save(
+                UserEntity.builder()
+                        .firstName("Test")
+                        .lastName("Admin")
+                        .email("admin@test.com")
+                        .passwordHash("password")
+                        .role(role)
+                        .build()
+        );
     }
 
-    @Test
-    @WithMockUser
-    void getDuffelFlightById_shouldReturn200() throws Exception {
-        SavedFlightResponse response = SavedFlightResponse.builder()
-                .id(1L)
-                .build();
+    private DuffelFlightEntity createDuffelFlight() {
+        AirportEntity departureAirport = airportRepository.save(
+                AirportEntity.builder()
+                        .iataCode("TST")
+                        .name("Test Departure Airport")
+                        .city("Test City")
+                        .country("Test Country")
+                        .timezone("Europe/Amsterdam")
+                        .build()
+        );
 
-        when(getDuffelFlightUseCase.getDuffelFlightById(1L)).thenReturn(response);
+        AirportEntity arrivalAirport = airportRepository.save(
+                AirportEntity.builder()
+                        .iataCode("UPD")
+                        .name("Test Arrival Airport")
+                        .city("Updated City")
+                        .country("Updated Country")
+                        .timezone("Europe/Amsterdam")
+                        .build()
+        );
 
-        mockMvc.perform(get("/flights/duffel/1"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(1));
-
-        verify(getDuffelFlightUseCase).getDuffelFlightById(1L);
-    }
-
-    @Test
-    @WithMockUser
-    void updateFlightGate_shouldReturn204() throws Exception {
-        mockMvc.perform(patch("/flights/duffel/1/gate")
-                        .param("gate", "B12"))
-                .andExpect(status().isNoContent());
-
-        verify(updateFlightGateUseCase).updateFlightGate(1L, "B12");
-    }
-
-    @Test
-    @WithMockUser
-    void updateFlightStatus_shouldReturn204() throws Exception {
-        mockMvc.perform(patch("/flights/duffel/1/status")
-                        .param("status", "DELAYED"))
-                .andExpect(status().isNoContent());
-
-        verify(updateFlightStatusUseCase).updateFlightStatus(eq(1L), eq(FlightStatus.DELAYED), isNull());
-    }
-
-    @Test
-    @WithMockUser
-    void updateFlightStatus_withNewDepTime_shouldReturn204() throws Exception {
-        mockMvc.perform(patch("/flights/duffel/1/status")
-                        .param("status", "DELAYED")
-                        .param("newDepTime", "2026-07-01T14:00:00"))
-                .andExpect(status().isNoContent());
-
-        verify(updateFlightStatusUseCase).updateFlightStatus(eq(1L), eq(FlightStatus.DELAYED), any());
+        return duffelRepository.save(
+                DuffelFlightEntity.builder()
+                        .externalId("test-flight-id")
+                        .flightNumber("ST123")
+                        .departureIataCode("TST")
+                        .arrivalIataCode("UPD")
+                        .departureAirport(departureAirport)
+                        .arrivalAirport(arrivalAirport)
+                        .departureTime(Instant.now().plusSeconds(3600))
+                        .arrivalTime(Instant.now().plusSeconds(7200))
+                        .departureTimezone("Europe/Amsterdam")
+                        .arrivalTimezone("Europe/Amsterdam")
+                        .gate("A1")
+                        .price(new BigDecimal("100.00"))
+                        .currency("EUR")
+                        .status(FlightStatus.SCHEDULED)
+                        .build()
+        );
     }
 }

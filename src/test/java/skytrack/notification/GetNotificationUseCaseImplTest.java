@@ -8,8 +8,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import skytrack.business.exception.notification.NotificationNotFoundException;
 import skytrack.business.impl.notification.GetNotificationUseCaseImpl;
 import skytrack.business.mapper.NotificationMapper;
+import skytrack.business.service.UserService;
 import skytrack.dto.notification.NotificationResponse;
 import skytrack.persistence.entity.NotificationEntity;
+import skytrack.persistence.entity.UserEntity;
 import skytrack.persistence.repo.NotificationRepository;
 
 import java.util.Optional;
@@ -26,32 +28,35 @@ public class GetNotificationUseCaseImplTest {
     @Mock
     private NotificationRepository notificationRepository;
 
+    @Mock
+    private UserService userService;
+
     @InjectMocks
     private GetNotificationUseCaseImpl getNotificationUseCase;
 
     @Test
     void getNotification_shouldReturnNotificationResponse_whenNotificationExists() {
-        // Arrange
+        UserEntity user = UserEntity.builder().id(1L).email("test@example.com").build();
+
         Long notificationId = 1L;
 
         NotificationEntity notification = new NotificationEntity();
+        notification.setUser(user);
 
         NotificationResponse response = NotificationResponse.builder()
                 .id(notificationId)
                 .title("Flight delayed")
                 .build();
 
+        when(userService.getLoggedUser()).thenReturn(user);
         when(notificationRepository.findById(notificationId))
                 .thenReturn(Optional.of(notification));
-
         when(notificationMapper.toResponse(notification))
                 .thenReturn(response);
 
-        // Act
         NotificationResponse result =
                 getNotificationUseCase.getNotification(notificationId);
 
-        // Assert
         assertNotNull(result);
         assertEquals(notificationId, result.getId());
         assertEquals("Flight delayed", result.getTitle());
@@ -63,8 +68,10 @@ public class GetNotificationUseCaseImplTest {
     @Test
     void getNotification_shouldThrowNotificationNotFoundException_whenNotificationDoesNotExist() {
         // Arrange
+        UserEntity user = new UserEntity();
+        user.setEmail("test@example.com");
         Long notificationId = 1L;
-
+        when(userService.getLoggedUser()).thenReturn(user);
         when(notificationRepository.findById(notificationId))
                 .thenReturn(Optional.empty());
 

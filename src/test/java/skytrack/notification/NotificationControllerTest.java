@@ -1,163 +1,143 @@
 package skytrack.notification;
 
-import org.junit.jupiter.api.BeforeEach;
+import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
-import org.springframework.cache.CacheManager;
-import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.test.web.servlet.MockMvc;
-import skytrack.business.service.JwtService;
-import skytrack.business.useCase.notification.*;
-import skytrack.dto.notification.NotificationResponse;
-import skytrack.presentation.controller.NotificationController;
-import skytrack.presentation.security.JwtAuthenticationFilter;
+import skytrack.persistence.entity.RoleEntity;
+import skytrack.persistence.entity.UserEntity;
+import skytrack.persistence.enumeration.Role;
+import skytrack.persistence.repo.RoleRepository;
+import skytrack.persistence.repo.UserRepository;
 
-import java.util.List;
-
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@WebMvcTest(NotificationController.class)
-class NotificationControllerTest {
-
+@SpringBootTest
+@AutoConfigureMockMvc
+@Transactional
+public class NotificationControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
-    @MockitoBean
-    private CacheManager cacheManager;
+    @Autowired
+    private UserRepository userRepository;
 
-    @MockitoBean
-    private JwtAuthenticationFilter jwtAuthenticationFilter;
+    @Autowired
+    private RoleRepository roleRepository;
 
-    @MockitoBean
-    private JwtService jwtService;
+    @Test
+    void getAllNotifications_withPassenger_shouldReturnOk() throws Exception {
+        createPassenger();
 
-    @MockitoBean
-    private GetNotificationUseCase getNotificationUseCase;
-
-    @MockitoBean
-    private GetAllNotificationsUseCase getAllNotificationsUseCase;
-
-    @MockitoBean
-    private MarkAllNotificationsAsReadUseCase markAllNotificationsAsReadUseCase;
-
-    @MockitoBean
-    private MarkNotificationAsReadUseCase markNotificationAsReadUseCase;
-
-    @MockitoBean
-    private GetUnreadNotificationsUseCase getUnreadNotificationsUseCase;
-
-    @BeforeEach
-    void setupFilter() throws Exception {
-        doAnswer(invocation -> {
-            jakarta.servlet.FilterChain chain = invocation.getArgument(2);
-            chain.doFilter(invocation.getArgument(0), invocation.getArgument(1));
-            return null;
-        }).when(jwtAuthenticationFilter).doFilter(any(), any(), any());
+        mockMvc.perform(get("/notifications")
+                        .with(user("passenger@test.com").roles("PASSENGER")))
+                .andExpect(status().isOk());
     }
 
     @Test
-    @WithMockUser
-    void getAllNotifications_shouldReturn200() throws Exception {
-        NotificationResponse notification = NotificationResponse.builder()
-                .id(1L)
-                .message("Your flight AMS-JFK has been updated.")
-                .read(false)
-                .build();
+    void getAllNotifications_withAdmin_shouldReturnForbidden() throws Exception {
+        createAdmin();
 
-        when(getAllNotificationsUseCase.getAllNotifications()).thenReturn(List.of(notification));
-
-        mockMvc.perform(get("/notifications"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].id").value(1))
-                .andExpect(jsonPath("$[0].message").value("Your flight AMS-JFK has been updated."))
-                .andExpect(jsonPath("$[0].read").value(false));
-
-        verify(getAllNotificationsUseCase).getAllNotifications();
+        mockMvc.perform(get("/notifications")
+                        .with(user("admin@test.com").roles("ADMIN")))
+                .andExpect(status().isForbidden());
     }
 
     @Test
-    @WithMockUser
-    void getAllNotifications_empty_shouldReturn200WithEmptyList() throws Exception {
-        when(getAllNotificationsUseCase.getAllNotifications()).thenReturn(List.of());
+    void getUnreadNotifications_withPassenger_shouldReturnOk() throws Exception {
+        createPassenger();
 
-        mockMvc.perform(get("/notifications"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$").isEmpty());
-
-        verify(getAllNotificationsUseCase).getAllNotifications();
+        mockMvc.perform(get("/notifications/unread")
+                        .with(user("passenger@test.com").roles("PASSENGER")))
+                .andExpect(status().isOk());
     }
 
     @Test
-    @WithMockUser
-    void getUnreadNotifications_shouldReturn200() throws Exception {
-        NotificationResponse notification = NotificationResponse.builder()
-                .id(2L)
-                .message("Gate changed to B12.")
-                .read(false)
-                .build();
+    void getUnreadNotifications_withAdmin_shouldReturnForbidden() throws Exception {
+        createAdmin();
 
-        when(getUnreadNotificationsUseCase.getUnreadNotifications()).thenReturn(List.of(notification));
-
-        mockMvc.perform(get("/notifications/unread"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].id").value(2))
-                .andExpect(jsonPath("$[0].read").value(false));
-
-        verify(getUnreadNotificationsUseCase).getUnreadNotifications();
+        mockMvc.perform(get("/notifications/unread")
+                        .with(user("admin@test.com").roles("ADMIN")))
+                .andExpect(status().isForbidden());
     }
 
     @Test
-    @WithMockUser
-    void getUnreadNotifications_empty_shouldReturn200WithEmptyList() throws Exception {
-        when(getUnreadNotificationsUseCase.getUnreadNotifications()).thenReturn(List.of());
+    void getNotification_whenNotificationDoesNotExist_shouldReturnNotFound() throws Exception {
+        createPassenger();
 
-        mockMvc.perform(get("/notifications/unread"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$").isEmpty());
-
-        verify(getUnreadNotificationsUseCase).getUnreadNotifications();
+        mockMvc.perform(get("/notifications/666666666")
+                        .with(user("passenger@test.com").roles("PASSENGER")))
+                .andExpect(status().isNotFound());
     }
 
     @Test
-    @WithMockUser
-    void getNotificationById_shouldReturn200() throws Exception {
-        NotificationResponse notification = NotificationResponse.builder()
-                .id(1L)
-                .message("Boarding now at gate A3.")
-                .read(true)
-                .build();
+    void markAsRead_withAdmin_shouldReturnForbidden() throws Exception {
+        createAdmin();
 
-        when(getNotificationUseCase.getNotification(1L)).thenReturn(notification);
-
-        mockMvc.perform(get("/notifications/1"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(1))
-                .andExpect(jsonPath("$.message").value("Boarding now at gate A3."))
-                .andExpect(jsonPath("$.read").value(true));
-
-        verify(getNotificationUseCase).getNotification(1L);
+        mockMvc.perform(patch("/notifications/1/read")
+                        .with(user("admin@test.com").roles("ADMIN"))
+                        .with(csrf()))
+                .andExpect(status().isForbidden());
     }
 
     @Test
-    @WithMockUser
-    void markAsRead_shouldReturn204() throws Exception {
-        mockMvc.perform(patch("/notifications/1/read"))
+    void markAllAsRead_withPassenger_shouldReturnNoContent() throws Exception {
+        createPassenger();
+
+        mockMvc.perform(patch("/notifications/read-all")
+                        .with(user("passenger@test.com").roles("PASSENGER"))
+                        .with(csrf()))
                 .andExpect(status().isNoContent());
-
-        verify(markNotificationAsReadUseCase).markNotificationAsRead(1L);
     }
 
     @Test
-    @WithMockUser
-    void markAllAsRead_shouldReturn204() throws Exception {
-        mockMvc.perform(patch("/notifications/read-all"))
-                .andExpect(status().isNoContent());
+    void markAllAsRead_withAdmin_shouldReturnForbidden() throws Exception {
+        createAdmin();
 
-        verify(markAllNotificationsAsReadUseCase).markAllNotificationsAsRead();
+        mockMvc.perform(patch("/notifications/read-all")
+                        .with(user("admin@test.com").roles("ADMIN"))
+                        .with(csrf()))
+                .andExpect(status().isForbidden());
+    }
+
+    private UserEntity createPassenger() {
+        RoleEntity role = roleRepository.save(
+                RoleEntity.builder()
+                        .roleName(Role.PASSENGER)
+                        .build()
+        );
+
+        return userRepository.save(
+                UserEntity.builder()
+                        .firstName("Test")
+                        .lastName("Passenger")
+                        .email("passenger@test.com")
+                        .passwordHash("password")
+                        .role(role)
+                        .build()
+        );
+    }
+
+    private UserEntity createAdmin() {
+        RoleEntity role = roleRepository.save(
+                RoleEntity.builder()
+                        .roleName(Role.ADMIN)
+                        .build()
+        );
+
+        return userRepository.save(
+                UserEntity.builder()
+                        .firstName("Test")
+                        .lastName("Admin")
+                        .email("admin@test.com")
+                        .passwordHash("password")
+                        .role(role)
+                        .build()
+        );
     }
 }
