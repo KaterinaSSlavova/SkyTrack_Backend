@@ -5,14 +5,19 @@ import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import skytrack.business.exception.airport.AirportAlreadyExistsException;
+import skytrack.business.exception.airport.AirportNotFoundException;
 import skytrack.business.exception.airport.InvalidAirportException;
+import skytrack.business.exception.booking.BookingNotFoundException;
 import skytrack.business.exception.flight.FlightNotFoundException;
 import skytrack.business.exception.flight.FlightStatusNotFoundException;
 import skytrack.business.exception.flight.InvalidFlightException;
+import skytrack.business.exception.notification.NotificationNotFoundException;
+import skytrack.business.exception.seat.SeatNotFoundException;
 import skytrack.business.exception.user.*;
 import skytrack.dto.exception.ErrorResponse;
 
@@ -22,6 +27,31 @@ import java.util.Map;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    @ExceptionHandler(AuthorizationDeniedException.class)
+    public ResponseEntity<ErrorResponse> handleAuthorizationDeniedException(
+            AuthorizationDeniedException ex) {
+
+        ErrorResponse response = new ErrorResponse(
+                "ACCESS_DENIED",
+                ex.getMessage(),
+                HttpStatus.FORBIDDEN.value(),
+                LocalDateTime.now()
+        );
+
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ErrorResponse> handleAccessDeniedException(AccessDeniedException ex) {
+        ErrorResponse response = new ErrorResponse(
+                "ACCESS_DENIED",
+                ex.getMessage(),
+                HttpStatus.FORBIDDEN.value(),
+                LocalDateTime.now()
+        );
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
+    }
 
     @ExceptionHandler(RefreshTokenException.class)
     public ResponseEntity<ErrorResponse> handleRefreshTokenException(RefreshTokenException ex) {
@@ -83,6 +113,48 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
     }
 
+    @ExceptionHandler(BookingNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleBookingNotFoundException(
+            BookingNotFoundException ex) {
+
+        ErrorResponse response = new ErrorResponse(
+                "BOOKING_NOT_FOUND",
+                ex.getMessage(),
+                HttpStatus.NOT_FOUND.value(),
+                LocalDateTime.now()
+        );
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+    }
+
+    @ExceptionHandler(SeatNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleSeatNotFoundException(
+            SeatNotFoundException ex) {
+
+        ErrorResponse response = new ErrorResponse(
+                "SEAT_NOT_FOUND",
+                ex.getMessage(),
+                HttpStatus.NOT_FOUND.value(),
+                LocalDateTime.now()
+        );
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+    }
+
+    @ExceptionHandler(NotificationNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleNotificationNotFoundException(
+            NotificationNotFoundException ex) {
+
+        ErrorResponse response = new ErrorResponse(
+                "NOTIFICATION_NOT_FOUND",
+                ex.getMessage(),
+                HttpStatus.NOT_FOUND.value(),
+                LocalDateTime.now()
+        );
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+    }
+
     @ExceptionHandler(UserEmailInvalidException.class)
     public ResponseEntity<ErrorResponse> handleUserEmailInvalidException(UserEmailInvalidException ex) {
         ErrorResponse response = new ErrorResponse(
@@ -93,6 +165,18 @@ public class GlobalExceptionHandler {
         );
 
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+    }
+
+    @ExceptionHandler(AirportNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleAirportNotFoundException(AirportNotFoundException ex) {
+        ErrorResponse response = new ErrorResponse(
+                "AIRPORT_NOT_FOUND",
+                ex.getMessage(),
+                HttpStatus.NOT_FOUND.value(),
+                LocalDateTime.now()
+        );
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
     }
 
     @ExceptionHandler(UserPasswordInvalidException.class)

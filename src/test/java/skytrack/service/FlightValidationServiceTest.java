@@ -174,4 +174,13 @@ public class FlightValidationServiceTest {
         flight.getStatus().setName("   ");
         assertThrows(InvalidFlightException.class, () -> validator.validateFlight(flight));
     }
+
+    @Test
+    void validateFlight_shouldPass_whenArrivalTimeEqualsDepartureTime() {
+        FlightEntity flight = buildValidFlight();
+
+        flight.setArrivalTimeUTC(Instant.parse("2026-06-01T10:00:00Z"));
+
+        assertDoesNotThrow(() -> validator.validateFlight(flight));
+    }
 }

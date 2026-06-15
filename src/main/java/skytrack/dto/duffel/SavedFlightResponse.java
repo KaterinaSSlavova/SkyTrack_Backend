@@ -1,6 +1,7 @@
 package skytrack.dto.duffel;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import skytrack.dto.airport.AirportResponse;
 import skytrack.persistence.enumeration.FlightStatus;
@@ -10,6 +11,7 @@ import java.time.LocalDateTime;
 
 @Getter
 @AllArgsConstructor
+@Builder
 public class SavedFlightResponse {
     private Long id;
     private String externalId;

@@ -132,4 +132,42 @@ public class UpdateFlightStatusUseCaseTest {
         verify(duffelRepository).save(flight);
         verify(notificationService, never()).createNotification(any(), any(), any());
     }
+
+    @Test
+    void updateFlightStatus_shouldNotifyAllBookings_whenStatusIsDelayed() {
+        DuffelFlightEntity flight = new DuffelFlightEntity();
+        flight.setDepartureTimezone("Europe/Amsterdam");
+
+        UserEntity user1 = new UserEntity();
+        UserEntity user2 = new UserEntity();
+
+        BookingEntity booking1 = new BookingEntity();
+        booking1.setUser(user1);
+
+        BookingEntity booking2 = new BookingEntity();
+        booking2.setUser(user2);
+
+        when(duffelRepository.findById(1L)).thenReturn(Optional.of(flight));
+        when(timeConverter.convertToUTC(any(), any())).thenReturn(Instant.now());
+        when(bookingRepository.findByExternalFlight_Id(any()))
+                .thenReturn(List.of(booking1, booking2));
+
+        updateFlightStatus.updateFlightStatus(
+                1L,
+                FlightStatus.DELAYED,
+                LocalDateTime.now()
+        );
+
+        verify(notificationService).createNotification(
+                NotificationType.FLIGHT_DELAYED,
+                user1,
+                flight
+        );
+
+        verify(notificationService).createNotification(
+                NotificationType.FLIGHT_DELAYED,
+                user2,
+                flight
+        );
+    }
 }

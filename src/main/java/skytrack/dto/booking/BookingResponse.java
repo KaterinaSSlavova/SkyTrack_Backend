@@ -1,9 +1,6 @@
 package skytrack.dto.booking;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import skytrack.dto.duffel.SavedFlightResponse;
 import skytrack.dto.seat.SeatResponse;
 import skytrack.dto.user.PassengerResponse;
@@ -13,6 +10,7 @@ import java.math.BigDecimal;
 @Getter @Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 public class BookingResponse {
     private Long id;
     private PassengerResponse passenger;

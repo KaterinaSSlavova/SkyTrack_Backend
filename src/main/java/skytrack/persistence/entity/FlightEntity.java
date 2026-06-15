@@ -8,6 +8,7 @@ import java.time.Instant;
 
 @Getter
 @Setter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity

@@ -59,7 +59,7 @@ public class GetSeatMapUseCaseTest {
         SeatMapResponse result = getSeatMapUseCase.getSeatMap(1L);
 
         //assert
-        assertThat(result.getFlight_id()).isEqualTo(1L);
+        assertThat(result.getFlightId()).isEqualTo(1L);
         assertThat(result.getSeats()).hasSize(2);
         assertThat(result.getSeats().get(0).getAvailable()).isFalse();
         assertThat(result.getSeats().get(1).getAvailable()).isTrue();
